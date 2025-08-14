@@ -267,13 +267,13 @@ void login() {
     if (personID == "none") {
         personID = userId(username,password,"../data/students.csv");
         if (personID[0] == 's') {
-            // studentStart(personID);
+            studentStart(personID);
         }else {
             std::cout<<"You are not exist.\n";
             welcome();
         }
     } else if (personID[0] == 'd') {
-        // doctorStart(personID);
+        doctorStart(personID);
     }else {
         std::cout<<"You are not exist.\n";
         welcome();
@@ -311,8 +311,8 @@ void signUp() {
     std::string line = userPrefix + std::to_string(id) + ',' + fname + ' ' + lname + ',' + username + ',' + password + ',' + email + (userPrefix == 's' ?  ",,,":",");
     file.addLine(line);
     if (userPrefix == 's') {
-        // studentStart(userPrefix + std::to_string(id));
+        studentStart(userPrefix + std::to_string(id));
     }else {
-        // doctorStart(userPrefix + std::to_string(id));
+        doctorStart(userPrefix + std::to_string(id));
     }
 }
