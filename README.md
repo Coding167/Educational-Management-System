@@ -1,7 +1,7 @@
 # Educational Management System
 
 ## 📌 Overview
-The **Educational Management System** is a console-based application written in C++ using `struct` for data organization.  
+The **Educational Management System - Advanced** is a console-based application written in C++ using `struct` for data organization.  
 It allows two types of users — **Doctor** and **Student** — to manage courses and assignments in a simple, text-based interface.
 
 ---
@@ -11,10 +11,13 @@ It allows two types of users — **Doctor** and **Student** — to manage course
 ### **1. Student**
 - Information: `ID`, `Name`, `Username`, `Password`, `Email`, `Courses`
 - Features:
-  - View assignments
-  - Submit assignments
   - Register in courses
   - View enrolled courses
+  - Submit assignments
+  - View assignments
+  - Add Friend
+  - View all Friends
+  - See the Notifications
 
 ### **2. Doctor**
 - Information: `ID`, `Name`, `Username`, `Password`, `Email`, `Courses`

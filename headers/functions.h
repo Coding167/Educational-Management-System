@@ -219,19 +219,15 @@ void login() {
     if (PersonID == "") {
         PersonID = getUserID(username, password, "doctors");
         if (PersonID[0] == 'd') {
-            cout<<PersonID<<endl;
             doctor(PersonID);
         }else {
             cout<<"Your account does not exist\n";
-            cout<<PersonID<<endl;
             welcome();
         }
     }else if (PersonID[0] == 's') {
-        cout<<PersonID<<endl;
         student(PersonID);
     }else {
         cout<<"Your account does not exist\n";
-        cout<<PersonID<<endl;
         welcome();
     }
 }
