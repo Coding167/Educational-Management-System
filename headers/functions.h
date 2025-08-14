@@ -292,7 +292,7 @@ void login() {
     }else if (PersonID[0] == 's') {
         PersonInfo = getInfo();
         cout<<"\nWelcome "<<PersonInfo.name<<". What are you want to do today?\n\n";
-        // student(PersonID);
+        student(PersonID);
     }else {
         cout<<"Your account does not exist\n";
         welcome();
@@ -344,7 +344,7 @@ void signUp() {
         doctor(PersonID);
     }else {
         cout<<"Welcome "<<firstName<<" "<<lastName<<". What are you want to do today?\n\n";
-        // student(PersonID);
+        student(PersonID);
     }
 }
 
