@@ -7,15 +7,9 @@
 #include <algorithm>
 #include "functions.h"
 string join(vstr items, char delimiter);
+int stringToInt(string text);
 
-
-/*
-1) Get Course                =>   course getCourse(string courseCode);
-2) Get Coursse of Person     =>   vector<course> GetStudentCourse(string personID)
-3) Add Course                =>   void addCourse(string name, string docID)
-4) Add Student To Course     =>   void addStudentToCourse(string courseCode, string studentId)
-5) Add Assignment To Course  =>   void addAssignmentToCourse(string courseCode, string assignmentId)
-*/
+// c1 , Python , d1 , m!32m , s1/s2 , a1
 
 course getCourse(string courseCode) {
     string line;
@@ -35,21 +29,18 @@ course getCourse(string courseCode) {
 
     if (!found) {
         cout << "Course not found.\n";
-        return Info; // empty course
+        return Info;
     }
 
     vstr parts = split(line, ',');
-    if (parts.size() < 5) {
-        cout << "Invalid course format.\n";
-        return Info;
-    }
 
     Info.code = parts.at(0);
     Info.name = parts.at(1);
     Info.doctorID = parts.at(2);
+    Info.password = parts.at(3);
 
     // Process students
-    vstr students = split(parts.at(3), '/');
+    vstr students = split(parts.at(4), '/');
     for (string studentID : students) {
         if (!studentID.empty()) {
             Info.studentsIDs.push_back(studentID);
@@ -57,7 +48,7 @@ course getCourse(string courseCode) {
     }
 
     // Process assignments
-    vstr assignments = split(parts.at(4), '/');
+    vstr assignments = split(parts.at(5), '/');
     for (string assignmentID : assignments) {
         if (!assignmentID.empty()) {
             Info.assignmentsIDs.push_back(assignmentID);
@@ -77,16 +68,16 @@ void addStudentToCourse(string courseCode, string studentId) {
     while (getline(inFile, line)) {
         vstr parts = split(line, ',');
         if (parts[0] == courseCode) {
-            vstr students = split(parts[3], '/');
+            vstr students = split(parts[4], '/');
 
             // Only add if not already in list
             if (find(students.begin(), students.end(), studentId) == students.end()) {
                 students.push_back(studentId);
                 sort(students.begin(), students.end());
-                parts[3] = join(students, '/');
+                parts[4] = join(students, '/');
 
                 // Rebuild updated line
-                line = parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + "," + parts[4];
+                line = parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5];
             }
         }
         lines.push_back(line); // Add (edited or original) line to vector
@@ -105,7 +96,7 @@ void addStudentToCourse(string courseCode, string studentId) {
 
     ifstream inFile1("Data/students.csv");
 
-    // Step 1: Read all lines and edit the target one
+    
     while (getline(inFile1, line1)) {
         vstr parts = split(line1, ',');
         if (parts[0] == studentId) {
@@ -119,7 +110,7 @@ void addStudentToCourse(string courseCode, string studentId) {
             }
 
             // Rebuild updated line
-            line1 = parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5];
+            line1 = parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + "," + parts[6] + "," + parts[7];
         }
         lines1.push_back(line1); // Add (edited or original) line to vector
     }
@@ -127,11 +118,9 @@ void addStudentToCourse(string courseCode, string studentId) {
     // Step 2: Overwrite the same file with updated lines
     ofstream outFile1("Data/students.csv");
     for (string l : lines1) {
-        string id0 = split(l, ',').at(0);
-        if (id0 == studentId) {
-            outFile1 << id0 << "," << split(l, ',').at(1) << "," << split(l, ',').at(2) << "," 
-                   << split(l, ',').at(3) << "," << split(l, ',').at(4) << "," 
-                   << join(split(split(l, ',').at(5),'/'), '/') << endl;
+        vstr parts = split(l,',');
+        if (parts.at(0) == studentId) {
+            outFile1 << parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + "," + parts[6] + "," + parts[7] << endl;
         } else {
             outFile1 << l << endl;
         }
@@ -148,16 +137,16 @@ void addAssignmentToCourse(string courseCode, string assignmentId) {
     while (getline(inFile, line)) {
         vstr parts = split(line, ',');
         if (parts[0] == courseCode) {
-            vstr assignments = split(parts[4], '/');
+            vstr assignments = split(parts[5], '/');
 
             // Add assignment if it doesn't already exist
             if (find(assignments.begin(), assignments.end(), assignmentId) == assignments.end()) {
                 assignments.push_back(assignmentId);
                 sort(assignments.begin(), assignments.end()); // keep it sorted
-                parts[4] = join(assignments, '/');
+                parts[5] = join(assignments, '/');
 
                 // rebuild the full updated line
-                line = parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + "," + parts[4];
+                line = parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5];
             }
         }
         lines.push_back(line);
@@ -175,7 +164,7 @@ void addAssignmentToCourse(string courseCode, string assignmentId) {
     
 }
 
-void addCourse(string name, string docID) {
+void addCourse(string name, string docID, string password) {
     // Step 1: Read current info from info.csv
     ifstream infoFile("Data/info.csv");
     string infoLine;
@@ -198,7 +187,7 @@ void addCourse(string name, string docID) {
 
     // Step 4: Add new course to courses.csv
     ofstream coursesFile("Data/courses.csv", ios::app); // append mode
-    coursesFile << newCourseCode << "," << name << "," << docID << "," << "," << endl;
+    coursesFile << newCourseCode << "," << name << "," << docID <<"," << password << "," << "," << endl;
     coursesFile.close();
 
     string line1;
@@ -210,7 +199,7 @@ void addCourse(string name, string docID) {
     // Step 1: Read all lines and edit the target one
     while (getline(inFile1, line1)) {
         vstr parts = split(line1, ',');
-        if (parts[0] == PersonID) {
+        if (parts[0] == docID) {
             vstr courses = split(parts[5], '/');
 
             courses.push_back(newCourseCode);
@@ -227,7 +216,7 @@ void addCourse(string name, string docID) {
     ofstream outFile1("Data/doctors.csv");
     for (string l : lines1) {
         string id0 = split(l, ',').at(0);
-        if (id0 == PersonID) {
+        if (id0 == docID) {
             outFile1 << id0 << "," << split(l, ',').at(1) << "," << split(l, ',').at(2) << "," 
                    << split(l, ',').at(3) << "," << split(l, ',').at(4) << "," 
                    << join(split(split(l, ',').at(5),'/'), '/') << endl;
@@ -253,12 +242,8 @@ vector<course> GetPersonCourse(string personID) {
         if (id == personID) {
             // Get the 6th field (course codes)
             vstr parts = split(infoLine, ',');
-            if (parts.size() == 4) {
-                return {};
-            }else {
-                coursesCodes = split(parts.at(5), '/');
-                sort(coursesCodes.begin(), coursesCodes.end());
-            }
+            coursesCodes = split(parts.at(5), '/');
+            sort(coursesCodes.begin(), coursesCodes.end());
             
             course myCourse;
             for (int i = 0 ; i < coursesCodes.size() ; i++) {
@@ -272,7 +257,6 @@ vector<course> GetPersonCourse(string personID) {
     }
     file.close();
     return Courses;
-    
 }
 
 vector<course> GetCoursesNOTstudentCourses(string studentID) {
@@ -294,8 +278,9 @@ vector<course> GetCoursesNOTstudentCourses(string studentID) {
             c.code = parts.at(0);
             c.name = parts.at(1);
             c.doctorID = parts.at(2);
-            c.studentsIDs = split(parts.at(3), '/');
-            c.assignmentsIDs = split(parts.at(4), '/');
+            c.password = parts.at(3);
+            c.studentsIDs = split(parts.at(4), '/');
+            c.assignmentsIDs = split(parts.at(5), '/');
             filteredCourses.push_back(c);
         }
     }
