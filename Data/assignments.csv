@@ -1,4 +1,10 @@
-a1,What's the correct way to print "hello" in python?,print("hello")/output("hello")/cout<<"hello";,0,s11=1
-a2,How to get input from user in python?,get("input: ")/input("input: ")/cin>>"input: ";,1,s11=0
-a3,which of these elements is a big heading in HTML?,<h1>...</h1>/<h2>...</h2>/<h5>...</h5>/<h6>...</h6>,0,
-a4,How to declare an string variable in JavaScript?,string var = "Text";/string text = "Text";/let text = "Text";/let var = "Text";,2,
+a1,What's the correct way to print "hello" in python?,print("hello")/output("hello")/cout<<"hello";,0,,
+a2,How to get input from user in python?,get("input: ")/input("input: ")/cin>>"input: ";,1,,
+a3,which of these elements is a big heading in HTML?,<h1>/<h2>/<h5>/<h6>,0,,
+a4,How to declare an string variable in JavaScript?,string var = "Text";/string text = "Text";/let text = "Text";/let var = "Text";,2,,
+a5,What is the correct way to add Two numbers in python?,add(5+6)/5+6/5*6,1,,
+a6,What is the biggest heading in html?,h3/head/header/h1,3,,
+a7,How are you print Hello CMD using Command line?,print Hello CMD/echo Hello CMD/command.print(Hello CMD),1,,
+a8,How do you change the current directory in CMD?,cd/md/rd/mv,0,,
+a9,how to get length of string in python?,len("hello")/length("hello"),0,,
+
