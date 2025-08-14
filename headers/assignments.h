@@ -78,12 +78,12 @@ void addAssignment(assignment newAssignment, string courseCode) {
     while (getline(inFile, line)) {
         vstr parts = split(line, ',');
         if (parts[0] == courseCode) {
-            vstr assignments = split(parts[4], '/');
+            vstr assignments = split(parts[5], '/');
             if (find(assignments.begin(), assignments.end(), newAssignment.id) == assignments.end()) {
                 assignments.push_back(newAssignment.id);
                 sort(assignments.begin(), assignments.end()); // keep it sorted
-                parts[4] = join(assignments, '/');
-                line = parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + "," + parts[4];
+                parts[5] = join(assignments, '/');
+                line = parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5];
             }
         }
         lines.push_back(line);
@@ -133,6 +133,18 @@ bool isStudentSolvedAssignment(string assignmentID, string studentID) {
     for (int i = 0; i < students.size(); i++) {
         vstr parts = split(students.at(i), '=');
         if (parts.at(0) == studentID && parts.at(1) == "1") {
+            return true; // Return true if solved, false if not solved
+        }
+    }
+    return false; // Student has not solved this assignment
+}
+
+bool isStudentInAssignment(string assignmentID, string studentID) {
+    assignment currentAssignment = getAssignment(assignmentID);
+    vstr students = currentAssignment.studentsSolve;
+    for (int i = 0; i < students.size(); i++) {
+        vstr parts = split(students.at(i), '=');
+        if (parts.at(0) == studentID) {
             return true; // Return true if solved, false if not solved
         }
     }
