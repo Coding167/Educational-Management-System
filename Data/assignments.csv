@@ -1,4 +1,4 @@
-a1,What's the correct way to print "hello" in python?,print("hello")/output("hello")/cout<<"hello";,0,s1=1
-a2,How i can print in c#?,print("hello")/Console.WriteLine("hello");/cout<<"hello";,1,s1=1
-a3,What is correct way to get input from the user?,get("Input: ")/input("Input: "),1,s1=0/s1=0
-a4,how to print in c++,print("mosa")/cout<<"mosa";,1,
+a1,What's the correct way to print "hello" in python?,print("hello")/output("hello")/cout<<"hello";,0,s11=1
+a2,How to get input from user in python?,get("input: ")/input("input: ")/cin>>"input: ";,1,s11=0
+a3,which of these elements is a big heading in HTML?,<h1>...</h1>/<h2>...</h2>/<h5>...</h5>/<h6>...</h6>,0,
+a4,How to declare an string variable in JavaScript?,string var = "Text";/string text = "Text";/let text = "Text";/let var = "Text";,2,

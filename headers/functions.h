@@ -1,6 +1,7 @@
 #ifndef FUNCTIONS_H_INCLUDED
 #define FUNCTIONS_H_INCLUDED
 
+// Librarys
 #include <cstdlib> // exit 
 #include <string>
 #include <vector>  // vector
@@ -8,12 +9,12 @@
 #include <cctype>
 #include <iostream>
 #include <regex>
-// using std
 using std::string;
 using std::vector;
 using namespace std;
 // typedef
 typedef vector<string> vstr;
+string PersonID;
 // Structures and variables
 struct course {
     string code;
@@ -21,8 +22,15 @@ struct course {
     string doctorID;
     vstr studentsIDs;
     vstr assignmentsIDs;
+    string password;
 };
-struct person {
+struct students {
+    string name;
+    vstr courses;
+    vstr friends;
+    vstr notifications;
+};
+struct doctors {
     string name;
     vstr courses;
 };
@@ -33,38 +41,9 @@ struct assignment{
     int correctAnswer;
     vstr studentsSolve;
 };
-
-int stringToInt(string text);
-vstr split(string text, char character);
-int validateChoice(int startNum, int endNum, string msg);
-void welcome();
-void signUp();
-void login();
-string join(vstr items, char delimiter);
-string PersonID;
-person PersonInfo;
 #include "doctors.h"
 #include "students.h"
-
-
-
-/*
-main functions
-01) Validate any integer Choice   =>  int validateChoice(int startNum, int endNum, string msg);
-02) Split any Text                =>  vstr split(string text, char character);
-03) Join words by charcter        =>  string join(vstr items, char delimiter);
-04) String to Integer             =>  int stringToInt(string text);
-05) Is Password Valid             =>  bool isValidPassword(string password);
-06) Is Email Valid                =>  bool isValidEmail(string email);
-07) Did username in this file     =>  bool usernameExistsInFile(string filename, string username);
-08) Is username taken             =>  bool isUsernameTaken(string username);
-09) Get unique Username           =>  string getUniqueUsername();
-10) Welcome section               =>  void welcome();
-11) log in you account            =>  void login();
-12) Get unique Password           =>  string getPassword();
-13) Get user id                   =>  string getUserID(string username, string password, string fileName);
-14) Get name and courses of person=>  person getInfo();
-*/
+void welcome();
 
 int validateChoice(int startNum, int endNum, string msg) {
     int choice;
@@ -111,6 +90,9 @@ vstr split(string text, char character) {
 }
 
 string join(vstr items, char delimiter) {
+    if (items.size() == 0) {
+        return "";
+    }
     string result;
     for (int i = 0; i < items.size(); i++) {
         result += items[i];
@@ -221,51 +203,6 @@ string getUserID(string username, string password, string fileName) {
     return "";
 }
 
-void welcome() {
-    cout<<"\nPlease make a choice\n"
-        <<"1- Login\n"
-        <<"2- Sign up\n"
-        <<"3- Shutdown system\n";
-    int choice = validateChoice(1,3,"Enter Choice: ");
-    cout<<endl;
-    switch (choice) {
-        case 1:
-            login();
-            break;
-        case 2:
-            signUp();
-            break;
-        default:
-            exit(0);
-            break;
-    }
-}
-
-person getInfo() {
-    string fileName = PersonID[0] == 's' ? "students" : "doctors";
-    ifstream file("Data/" + fileName + ".csv");
-    string line;
-    person PersonInfo1;
-    vstr fields;
-
-    while (getline(file, line)) {
-        fields = split(line, ',');
-        if (fields.at(0) == PersonID) {
-            PersonInfo1.name = fields.at(1);
-            if (fields.size() == 5) {
-                PersonInfo1.courses = {};
-            }else {
-                PersonInfo1.courses = split(fields.at(5),'/');
-            }
-            file.close();
-            break;
-            return PersonInfo1;
-        }
-    }
-    file.close();
-    return PersonInfo1;
-}
-
 void login() {
     string username;
     string password;
@@ -282,16 +219,12 @@ void login() {
     if (PersonID == "") {
         PersonID = getUserID(username, password, "doctors");
         if (PersonID[0] == 'd') {
-            PersonInfo = getInfo();
-            cout<<"\nWelcome Doctor "<<PersonInfo.name<<". What are you want to do today?\n\n";
             doctor(PersonID);
         }else {
             cout<<"Your account does not exist\n";
             welcome();
         }
     }else if (PersonID[0] == 's') {
-        PersonInfo = getInfo();
-        cout<<"\nWelcome "<<PersonInfo.name<<". What are you want to do today?\n\n";
         student(PersonID);
     }else {
         cout<<"Your account does not exist\n";
@@ -329,22 +262,46 @@ void signUp() {
     int IDNum = stringToInt(ID1);
     IDNum++;
     string PersonID = idPrefix + to_string(IDNum);
+
+    string line = PersonID + "," + firstName + " " + lastName + "," + username + "," + password + "," + email + (idPrefix == "s"? ",,,": ",");
+
+
     ofstream outFile("Data/" + fileName + ".csv", ios::app);
-    outFile << PersonID << "," << firstName << " " << lastName << "," << username << "," 
-            << password << "," << email << ",," << endl;
+    outFile << line << endl;
     outFile.close();
+    
     ofstream infoOut("Data/info.csv");
     infoOut << split(infoLine, ',').at(0) << ","
             << (choice == 2 ? split(infoLine, ',').at(1) : PersonID) << ","
             << (choice == 1 ? split(infoLine, ',').at(2) : PersonID) << ","
-            << split(infoLine, ',').at(3) << "," << endl;
+            << split(infoLine, ',').at(3) << endl;
     infoOut.close();
-    if (PersonID[0] == 'd') {
+    if (idPrefix == "d") {
         cout<<"Welcome Doctor "<<firstName<<" "<<lastName<<". What are you want to do today?\n\n";
         doctor(PersonID);
     }else {
         cout<<"Welcome "<<firstName<<" "<<lastName<<". What are you want to do today?\n\n";
         student(PersonID);
+    }
+}
+
+void welcome() {
+    cout<<"\nPlease make a choice\n"
+        <<"1- Login\n"
+        <<"2- Sign up\n"
+        <<"3- Shutdown system\n";
+    int choice = validateChoice(1,3,"Enter Choice: ");
+    cout<<endl;
+    switch (choice) {
+        case 1:
+            login();
+            break;
+        case 2:
+            signUp();
+            break;
+        default:
+            exit(0);
+            break;
     }
 }
 

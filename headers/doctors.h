@@ -1,40 +1,33 @@
 #ifndef DOCTORS_H_INCLUDED
 #define DOCTORS_H_INCLUDED
 
-#include <iostream>
-#include <fstream>
-#include <iomanip>
 #include "functions.h"
-#include "assignments.h"
-using namespace std;
-void addCourse(string name, string docID);
-vector<course> GetPersonCourse(string personID);
+#include <iomanip>
+int validateChoice(int startNum, int endNum, string msg);
+vector<course> GetPersonCourse(string studentID);
+assignment getAssignment(string id);
+void addAssignment(assignment newAssignment, string courseCode);
+void welcome();
 void doctor(string ID);
+vstr split(string text, char character);
+string getPassword();
+void addCourse(string name, string docID, string password);
 
-
-/*
-1) Get Doctor Info              =>  person getDoctor(string id);
-2) Menu of a doctor             =>  void doctor();
-3) Create a course              =>  void createCourse();
-4) List courses                 =>  void listCourses();
-5) Add assignment to course     =>  void addAssignmentToCourse();
-6) Show assignments from course =>  void showAssignmentsFromCourse();
-*/
-
-void createCourse(string PersonID) {
-    string courseName;
-    cout << "Enter Course Name: ";
+void createCourse(string doctorID) {
+    string courseName, password;
     cin.clear();
     cin.ignore(10000, '\n'); 
+    cout << "Enter Course Name: ";
     getline(cin, courseName);
-    addCourse(courseName, PersonID);
-    cout<<PersonID<<endl;
+    cout<<"Enter the password: ";
+    password = getPassword();
+    addCourse(courseName, doctorID, password);
     cout << "Course created successfully.\n";
-    doctor(PersonID);
+    doctor(doctorID);
 }
 
-void listCourses(string PersonID) {
-    vector<course> courses = GetPersonCourse(PersonID);
+void listCourses(string doctorID) {
+    vector<course> courses = GetPersonCourse(doctorID);
     if (courses.empty()) {
         cout << "No courses found.\n";
         return;
@@ -65,12 +58,12 @@ void listCourses(string PersonID) {
         }
     }
     cout<<endl;
-    doctor(PersonID);
+    doctor(doctorID);
     return;
 }
 
-void addAssignmentToCourse(string PersonID) {
-    vector<course> courses = GetPersonCourse(PersonID);
+void addAssignmentToCourse(string doctorID) {
+    vector<course> courses = GetPersonCourse(doctorID);
     char yOrn;
     if (courses.empty()) {
         cout << "No courses found.\n";
@@ -87,8 +80,8 @@ void addAssignmentToCourse(string PersonID) {
     if (selectedCourse.studentsIDs.empty()) {
         cout << "No students enrolled in this course.\n";
     } else {
-        cout << "Enrolled Students: ";
-        for (const string& studentID : selectedCourse.studentsIDs) {
+        cout << "Students: ";
+        for (string studentID : selectedCourse.studentsIDs) {
             cout << " " << studentID;
         }
     }
@@ -97,7 +90,7 @@ void addAssignmentToCourse(string PersonID) {
         cout << "No assignments for this course.\n";
     } else {
         cout << "Assignments: ";
-        for (const string& assignmentID : selectedCourse.assignmentsIDs) {
+        for (string assignmentID : selectedCourse.assignmentsIDs) {
             cout << " " << assignmentID;
         }
     }
@@ -141,12 +134,12 @@ void addAssignmentToCourse(string PersonID) {
     } else {
         cout << "Invalid input. Please enter 'y' or 'n'.\n";
     }
-    doctor(PersonID);
+    doctor(doctorID);
     return;
 }
 
-void showAssignmentsFromCourse(string PersonID) {
-    vector<course> courses = GetPersonCourse(PersonID);
+void showAssignmentsFromCourse(string doctorID) {
+    vector<course> courses = GetPersonCourse(doctorID);
     char yOrn;
     if (courses.empty()) {
         cout << "No courses found.\n";
@@ -187,19 +180,18 @@ void showAssignmentsFromCourse(string PersonID) {
             }
         }
     }
-    doctor(PersonID);
+    doctor(doctorID);
     return;
 }
 
-person getDoctor(string id) {
-    ifstream file("Data/doctors.csv");
+doctors getDoctor(string doctorID) {
     string line;
-    person doctor;
+    doctors doctor;
     vstr fields;
-
+    ifstream file("Data/doctors.csv");
     while (getline(file, line)) {
         fields = split(line, ',');
-        if (fields.at(0) == id) {
+        if (fields.at(0) == doctorID) {
             break;
         }
     }
@@ -210,6 +202,7 @@ person getDoctor(string id) {
 }
 
 void doctor(string ID) {
+    cout<<"\nWelcome Doctor "<<ID<<". What are you want to do today?\n\n";
     cout<<"1- Create a Course\n"
         <<"2- Add Assignment\n"
         <<"3- List my Courses\n"
