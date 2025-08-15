@@ -9,16 +9,16 @@ class Course;
 class User {
     protected:
         int id;
-        char userPrefix;
-        std::string name = "";
-        std::string username = "";
+        std::string userPrefix;
+        std::string name;
+        std::string username;
         std::string password;
         std::string email;
         std::vector<std::string> coursesIDs;
         std::string filePath;
 
     public:
-        User(): id(0), userPrefix('p') {}
+        User(): id(0), userPrefix("u") {}
 
         std::string getID() const;
         std::string getName() const;

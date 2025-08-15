@@ -28,5 +28,5 @@ std::vector<Course*> User::getCourses() const {
 }
 void User::setID(std::string id) {
     this->id = 0;
-    this->userPrefix = 'p';
+    this->userPrefix = "u";
 }
