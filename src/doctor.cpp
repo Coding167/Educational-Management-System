@@ -3,22 +3,23 @@
 #include "../headers/course.h"
 #include "../headers/assignment.h"
 #include "../headers/student.h"
+#include "../headers/constants.h"
 #include <limits>
 
 
 void Doctor::setID(std::string id) {
     this->id = stringToInt(id);
-    this->userPrefix = 'd';
-    this->filePath = "../data/doctors.csv";
+    this->userPrefix = DoctorConstants().PREFIX;
+    this->filePath = DoctorConstants().FILE_PATH;
     File file(filePath);
     std::string line = file.readLine(this->id);
     std::vector<std::string> parts = split(line,',');
 
-    this->name = parts.at(1);
-    this->username = parts.at(2);
-    this->password = parts.at(3);
-    this->email = parts.at(4);
-    this->coursesIDs = split(parts.at(5),'/');
+    this->name = parts.at(DoctorConstants().NAME);
+    this->username = parts.at(DoctorConstants().USERNAME);
+    this->password = parts.at(DoctorConstants().PASSWORD);
+    this->email = parts.at(DoctorConstants().EMAIL);
+    this->coursesIDs = split(parts.at(DoctorConstants().COURSE_IDS),DoctorConstants().COURSE_IDS_SEPARATOR);
 }
 
 void doctorStart(std::string personID) {
@@ -43,12 +44,12 @@ void doctorStart(std::string personID) {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::getline(std::cin,name);
             std::string courseID = Course::addCourse(name,doc.getID());
-            File file("../data/doctors.csv");
-            std::vector<std::string> parts = split(file.readLine(stringToInt(doc.getID())),',');
-            std::vector<std::string> cs = split(parts.at(5),'/');
+            File file(DoctorConstants().FILE_PATH);
+            std::vector<std::string> parts = split(file.readLine(stringToInt(doc.getID())),DoctorConstants().FIELDS_SEPARATOR);
+            std::vector<std::string> cs = split(parts.at(DoctorConstants().COURSE_IDS),DoctorConstants().COURSE_IDS_SEPARATOR);
             cs.push_back(courseID);
-            parts.at(5) = join(cs,'/');
-            file.replaceLine(stringToInt(doc.getID()),join(parts,','));
+            parts.at(5) = join(cs,DoctorConstants().COURSE_IDS_SEPARATOR);
+            file.replaceLine(stringToInt(doc.getID()),join(parts,DoctorConstants().FIELDS_SEPARATOR));
         } else if (choice == 3) {
             std::vector<Course*> courses = doc.getCourses();
             if (courses.empty()) {
