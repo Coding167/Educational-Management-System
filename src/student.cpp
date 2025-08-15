@@ -22,6 +22,7 @@ void Student::setID(std::string id) {
 }
 
 void studentStart(std::string personID) {
+    // the student
     Student stu(personID);
     /* 
     1- My Profile           ✅
@@ -35,6 +36,7 @@ void studentStart(std::string personID) {
     9- Log out              ✅
     */
     while (true) {
+        // menu
         std::cout<<"\nPlease make a choice:\n"
         <<"1- My Profile\n"
         <<"2- Register in Course\n"
@@ -55,6 +57,7 @@ void studentStart(std::string personID) {
             <<"You have "<<stu.getCourses().size()<<" Course(s)"<<std::endl
             <<"You have "<<stu.getFriends().size()<<" Friend(s) and "<<stu.getNotificatoins().size()<<" Notification(s)\n";
         }else if (choice == 2) {
+            // Register in Course
             std::vector<Course*> courses = stu.getUnregisteredCourses();
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<std::endl;
@@ -90,6 +93,7 @@ void studentStart(std::string personID) {
                     <<"\nCreated by: "<<currentCourse->getDoctor()
                     <<"\nHas "<<currentCourse->getAssignments().size()<<" Assignment(s) and "<<currentCourse->getStudetns().size()<<" Student(s)\n";
         } else if (choice == 4) {
+            // Solve Assignment
             std::vector<Course*> courses = stu.getCourses();
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
@@ -126,6 +130,7 @@ void studentStart(std::string personID) {
                 std::cout<<"You Solve "<<count<<" Out of "<<assignments.size()<<std::endl;
             }
         } else if (choice == 5) {
+            // Assignment Report
             std::vector<Course*> courses = stu.getCourses();
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
@@ -139,6 +144,7 @@ void studentStart(std::string personID) {
             }
             std::cout<<"You Solve "<<count<<" Out of "<<currentAssignment.size()<<std::endl;
         } else if (choice == 6) {
+            // Add Friend
             std::vector<Student*> notFriends = stu.getNotFriends();
             for (int i = 0 ; i < notFriends.size() ; i++) {
                 std::cout<<i+1<<". "<<notFriends.at(i)->getName()<<std::endl;
@@ -156,6 +162,7 @@ void studentStart(std::string personID) {
                 currentFriend->addNotification(stu.getID());
             }
         } else if (choice == 7) {
+            // List my Friends
             std::vector<Student*> friends = stu.getFriends();
             if (friends.size() == 0) {
                 std::cout<<"You haven't Friends.\n";
@@ -174,6 +181,7 @@ void studentStart(std::string personID) {
                     <<"\nHe Register in "<<currentFriend->getCourses().size()<<" Course(s)"
                     <<"\nHe has "<<currentFriend->getFriends().size()<<" Friend(s)\n";
         } else if (choice == 8) {
+            // Get Notifications
             std::vector<Student*> notifications = stu.getNotificatoins();
             if (notifications.size() == 0) {
                 std::cout<<"You haven't Notifications.\n";
@@ -195,9 +203,7 @@ void studentStart(std::string personID) {
                 stu.addFriend(currentNotification->getID());
                 currentNotification->addFriend(stu.getID());
             }
-        }
-        
-        else {
+        }else {
             // Log out
             break;
         }
