@@ -75,6 +75,10 @@ void studentStart(std::string personID) {
         } else if (choice == 3) {
             // List my courses
             std::vector<Course*> courses = stu.getCourses();
+            if (courses.size() == 0) {
+                std::cout<<"You haven't Courses.\n";
+                continue;
+            }
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
             }
@@ -153,6 +157,10 @@ void studentStart(std::string personID) {
             }
         } else if (choice == 7) {
             std::vector<Student*> friends = stu.getFriends();
+            if (friends.size() == 0) {
+                std::cout<<"You haven't Friends.\n";
+                continue;
+            }
             std::cout<<"You have "<<friends.size()<<" Friend(s)\n";
             for (int i = 0 ; i < friends.size() ; i++) {
                 std::cout<<i+1<<". "<<friends.at(i)->getName()<<std::endl;

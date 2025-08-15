@@ -1,6 +1,8 @@
 #include "../headers/functions.h"
 #include "../headers/student.h"
 #include "../headers/doctor.h"
+#include "../headers/constants.h"
+#include <limits>
 #include <fstream>
 #include <regex>
 #include <cctype>
@@ -135,7 +137,7 @@ int validateChoice(int startNum, int endNum, std::string msg) {
 
         if (std::cin.fail()) {
             std::cin.clear();
-            std::cin.ignore(1000, '\n');
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Invalid input. Please enter a number.\n";
         }
         else if (choice < startNum || choice > endNum) {
@@ -183,7 +185,7 @@ std::string getPassword() {
     std::string password;
     do {
         std::cin.clear();
-        std::cin.ignore(10000,'\n');
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
         std::cout << "Enter a strong password (at least 8 chars, upper, lower, digit): ";
         std::cin >> password;
 
@@ -214,8 +216,8 @@ bool usernameExistsInFile(std::string filename, std::string username) {
 }
 
 bool isUsernameTaken(std::string username) {
-    return usernameExistsInFile("../data/doctors.csv", username) ||
-           usernameExistsInFile("../data/students.csv", username);
+    return usernameExistsInFile(DoctorConstants().FILE_PATH, username) ||
+           usernameExistsInFile(StudentConstants().FILE_PATH, username);
 }
 
 std::string getUniqueUsername() {
@@ -264,16 +266,16 @@ void login() {
     std::cout<<"Enter Password: ";
     std::cin>>password;
     
-    std::string personID = userId(username,password,"../data/doctors.csv");
+    std::string personID = userId(username,password,DoctorConstants().FILE_PATH);
     if (personID == "none") {
-        personID = userId(username,password,"../data/students.csv");
-        if (personID[0] == 's') {
+        personID = userId(username,password,StudentConstants().FILE_PATH);
+        if (personID[0] == StudentConstants().PREFIX[0]) {
             studentStart(personID);
         }else {
             std::cout<<"You are not exist.\n";
             welcome();
         }
-    } else if (personID[0] == 'd') {
+    } else if (personID[0] == DoctorConstants().PREFIX[0]) {
         doctorStart(personID);
     }else {
         std::cout<<"You are not exist.\n";
@@ -299,19 +301,20 @@ void signUp() {
     } while (!isValidEmail(email));
     std::cout<<"1. Student\n2. Doctor\n";
     sOrD = validateChoice(1,2,"Who are you? ");
-    std::string filename = (sOrD == 1 ? "../data/students.csv" : "../data/doctors.csv");
-    char userPrefix = (sOrD == 1 ? 's' : 'd');
+    std::string filename = (sOrD == 1 ? StudentConstants().FILE_PATH : DoctorConstants().FILE_PATH);
+    char userPrefix = (sOrD == 1 ? StudentConstants().PREFIX[0] : DoctorConstants().PREFIX[0]);
+    char fieldsSeparator = (sOrD == 1 ? StudentConstants().FIELDS_SEPARATOR : DoctorConstants().FIELDS_SEPARATOR);
 
-    File infoFile("../data/info.csv");
-    std::vector<std::string> parts = split(infoFile.readLine(1),',');
+    File infoFile(InfoConstants().FILE_PATH);
+    std::vector<std::string> parts = split(infoFile.readLine(1),InfoConstants().FIELDS_SEPARATOR);
     int id = stringToInt(parts.at(sOrD));
     id++;
     parts.at(sOrD) = userPrefix + std::to_string(id);
-    infoFile.replaceLine(1,join(parts,','));
+    infoFile.replaceLine(1,join(parts,InfoConstants().FIELDS_SEPARATOR));
     File file(filename);
-    std::string line = userPrefix + std::to_string(id) + ',' + fname + ' ' + lname + ',' + username + ',' + password + ',' + email + (userPrefix == 's' ?  ",,,":",");
+    std::string line = userPrefix + std::to_string(id) + fieldsSeparator + fname + ' ' + lname + fieldsSeparator + username + fieldsSeparator + password + fieldsSeparator + email + (userPrefix == StudentConstants().PREFIX[0] ?  ",,,":",");
     file.addLine(line);
-    if (userPrefix == 's') {
+    if (userPrefix == StudentConstants().PREFIX[0]) {
         studentStart(userPrefix + std::to_string(id));
     }else {
         doctorStart(userPrefix + std::to_string(id));
