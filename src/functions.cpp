@@ -79,6 +79,7 @@ void File::replaceLine(int lineNum, std::string line) {
 // some functions
 
 std::vector<std::string> split(std::string text, char character) {
+    if (text.empty()) return {};
     text += character;
     std::vector<std::string> result;
     std::string word;
