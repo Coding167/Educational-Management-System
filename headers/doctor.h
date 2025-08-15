@@ -7,8 +7,8 @@ class Doctor: public User {
     public:
         Doctor() {
             this->id = 0;
-            this->userPrefix = 'd';
-            this->filePath = "../data/doctors.csv";
+            this->userPrefix;
+            this->filePath;
         }
         Doctor(std::string id) { this->setID(id); }
 

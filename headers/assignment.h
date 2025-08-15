@@ -8,13 +8,13 @@
 class Assignment {
     private:
         int id;
-        char assignmentPrefix = 'a';
+        std::string assignmentPrefix;
         std::string question;
         std::vector<std::string> answers;
         int correctAnswer;
         std::vector<std::string> students_s_IDs;  // Solved students
         std::vector<std::string> students_ns_IDs; // Not solved students
-        std::string filePath = "../data/assignments.csv";
+        std::string filePath;
 
     public:
         Assignment(): id(0), correctAnswer(-1) {}

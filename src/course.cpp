@@ -3,31 +3,36 @@
 #include "../headers/student.h"
 #include "../headers/doctor.h"
 #include "../headers/assignment.h"
+#include "../headers/constants.h"
 
 void Course::setID(int id) {
     this->id = id;
+    this->coursePrefix = courseConstants().PREFIX;
+    this->filePath = courseConstants().FILE_PATH;
+
+    // Read course data from file
     File file(this->filePath);
     std::string line = file.readLine(id);
-    std::vector<std::string> parts = split(line,',');
+    std::vector<std::string> parts = split(line,courseConstants().FIELDS_SEPARATOR);
 
-    this->name = parts.at(1);
-    this->docID = parts.at(2);
-    this->studentsIDs = split(parts.at(3),'/');
-    this->assignmentsIDs = split(parts.at(4), '/');
+    this->name = parts.at(courseConstants().NAME);
+    this->docID = parts.at(courseConstants().DOC_ID);
+    this->studentsIDs = split(parts.at(courseConstants().STUDENTS_IDS),courseConstants().STUDENTS_IDS_SEPARATOR);
+    this->assignmentsIDs = split(parts.at(courseConstants().ASSIGNMENTS_IDS), courseConstants().ASSIGNMENTS_IDS_SEPARATOR);
 }
 
 std::string Course::addCourse(std::string name, std::string docID) {
-    File infoFile("../data/info.csv");
+    File infoFile(InfoConstants().FILE_PATH);
     std::string infoLine = infoFile.readLine(1);
-    std::vector<std::string> parts = split(infoLine,',');
-    int id = stringToInt(parts.at(0));
+    std::vector<std::string> parts = split(infoLine,InfoConstants().FIELDS_SEPARATOR);
+    int id = stringToInt(parts.at(InfoConstants().COURSE_ID));
     id++;
-    parts.at(0) = 'c' + std::to_string(id);
-    infoFile.replaceLine(1,join(parts,','));
-    File file("../data/courses.csv");
-    std::string line = 'c' + std::to_string(id) + ',' + name + ',' + docID + ",,\n";
+    parts.at(InfoConstants().COURSE_ID) = courseConstants().PREFIX + std::to_string(id);
+    infoFile.replaceLine(1,join(parts,InfoConstants().FIELDS_SEPARATOR));
+    File file(courseConstants().FILE_PATH);
+    std::string line = courseConstants().PREFIX + std::to_string(id) + courseConstants().FIELDS_SEPARATOR + name + courseConstants().FIELDS_SEPARATOR + docID + courseConstants().FIELDS_SEPARATOR + courseConstants().FIELDS_SEPARATOR + "\n";
     file.addLine(line);
-    return ('c' + std::to_string(id));
+    return (courseConstants().PREFIX + std::to_string(id));
 }
 
 std::string Course::getName() const {
@@ -70,8 +75,8 @@ std::string Course::getDoctor() {
 }
 
 void Course::addStudent(std::string stuID) {
-    File file(filePath);
+    File file(this->filePath);
     this->studentsIDs.push_back(stuID);
-    std::string line = (this->coursePrefix + std::to_string(id)) + ',' + this->name + ',' + this->docID + ',' + join(this->studentsIDs,'/') + ',' + join(this->assignmentsIDs,'/');
+    std::string line = (this->coursePrefix + std::to_string(id)) + courseConstants().FIELDS_SEPARATOR + this->name + courseConstants().FIELDS_SEPARATOR + this->docID + courseConstants().FIELDS_SEPARATOR + join(this->studentsIDs,courseConstants().STUDENTS_IDS_SEPARATOR) + courseConstants().FIELDS_SEPARATOR + join(this->assignmentsIDs,courseConstants().ASSIGNMENTS_IDS_SEPARATOR);
     file.replaceLine(this->id,line);
 }

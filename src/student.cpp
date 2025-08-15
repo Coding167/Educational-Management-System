@@ -6,26 +6,23 @@
 
 void Student::setID(std::string id) {
     this->id = stringToInt(id);
-    this->userPrefix = 's';
-    this->filePath = "../data/students.csv";
-    File file(filePath);
+    this->userPrefix = StudentConstants().PREFIX;
+    this->filePath = StudentConstants().FILE_PATH;
+    File file(this->filePath);
     std::string line = file.readLine(this->id);
-    std::vector<std::string> parts = split(line,',');
+    std::vector<std::string> parts = split(line,StudentConstants().FIELDS_SEPARATOR);
 
-    this->name = parts.at(1);
-    this->username = parts.at(2);
-    this->password = parts.at(3);
-    this->email = parts.at(4);
-    this->coursesIDs = split(parts.at(5),'/');
-    this->friendsIDs = split(parts.at(6),'/');
-    this->notificationsIDs = split(parts.at(7),'/');
-}
-
-std::string Student::addStudent(std::string name, std::string username, std::string password, std::string email) {
-    return "";
+    this->name = parts.at(StudentConstants().NAME);
+    this->username = parts.at(StudentConstants().USERNAME);
+    this->password = parts.at(StudentConstants().PASSWORD);
+    this->email = parts.at(StudentConstants().EMAIL);
+    this->coursesIDs = split(parts.at(StudentConstants().COURSE_IDS),StudentConstants().COURSE_IDS_SEPARATOR);
+    this->friendsIDs = split(parts.at(StudentConstants().FRIENDS_IDS),StudentConstants().FRIENDS_IDS_SEPARATOR);
+    this->notificationsIDs = split(parts.at(StudentConstants().NOTIFICATIONS),StudentConstants().NOTIFICATIONS_SEPARATOR);
 }
 
 void studentStart(std::string personID) {
+    // the student
     Student stu(personID);
     /* 
     1- My Profile           ✅
@@ -39,6 +36,7 @@ void studentStart(std::string personID) {
     9- Log out              ✅
     */
     while (true) {
+        // menu
         std::cout<<"\nPlease make a choice:\n"
         <<"1- My Profile\n"
         <<"2- Register in Course\n"
@@ -59,6 +57,7 @@ void studentStart(std::string personID) {
             <<"You have "<<stu.getCourses().size()<<" Course(s)"<<std::endl
             <<"You have "<<stu.getFriends().size()<<" Friend(s) and "<<stu.getNotificatoins().size()<<" Notification(s)\n";
         }else if (choice == 2) {
+            // Register in Course
             std::vector<Course*> courses = stu.getUnregisteredCourses();
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<std::endl;
@@ -79,6 +78,10 @@ void studentStart(std::string personID) {
         } else if (choice == 3) {
             // List my courses
             std::vector<Course*> courses = stu.getCourses();
+            if (courses.size() == 0) {
+                std::cout<<"You haven't Courses.\n";
+                continue;
+            }
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
             }
@@ -90,6 +93,7 @@ void studentStart(std::string personID) {
                     <<"\nCreated by: "<<currentCourse->getDoctor()
                     <<"\nHas "<<currentCourse->getAssignments().size()<<" Assignment(s) and "<<currentCourse->getStudetns().size()<<" Student(s)\n";
         } else if (choice == 4) {
+            // Solve Assignment
             std::vector<Course*> courses = stu.getCourses();
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
@@ -126,6 +130,7 @@ void studentStart(std::string personID) {
                 std::cout<<"You Solve "<<count<<" Out of "<<assignments.size()<<std::endl;
             }
         } else if (choice == 5) {
+            // Assignment Report
             std::vector<Course*> courses = stu.getCourses();
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
@@ -139,6 +144,7 @@ void studentStart(std::string personID) {
             }
             std::cout<<"You Solve "<<count<<" Out of "<<currentAssignment.size()<<std::endl;
         } else if (choice == 6) {
+            // Add Friend
             std::vector<Student*> notFriends = stu.getNotFriends();
             for (int i = 0 ; i < notFriends.size() ; i++) {
                 std::cout<<i+1<<". "<<notFriends.at(i)->getName()<<std::endl;
@@ -156,7 +162,12 @@ void studentStart(std::string personID) {
                 currentFriend->addNotification(stu.getID());
             }
         } else if (choice == 7) {
+            // List my Friends
             std::vector<Student*> friends = stu.getFriends();
+            if (friends.size() == 0) {
+                std::cout<<"You haven't Friends.\n";
+                continue;
+            }
             std::cout<<"You have "<<friends.size()<<" Friend(s)\n";
             for (int i = 0 ; i < friends.size() ; i++) {
                 std::cout<<i+1<<". "<<friends.at(i)->getName()<<std::endl;
@@ -170,6 +181,7 @@ void studentStart(std::string personID) {
                     <<"\nHe Register in "<<currentFriend->getCourses().size()<<" Course(s)"
                     <<"\nHe has "<<currentFriend->getFriends().size()<<" Friend(s)\n";
         } else if (choice == 8) {
+            // Get Notifications
             std::vector<Student*> notifications = stu.getNotificatoins();
             if (notifications.size() == 0) {
                 std::cout<<"You haven't Notifications.\n";
@@ -191,9 +203,7 @@ void studentStart(std::string personID) {
                 stu.addFriend(currentNotification->getID());
                 currentNotification->addFriend(stu.getID());
             }
-        }
-        
-        else {
+        }else {
             // Log out
             break;
         }
@@ -250,7 +260,7 @@ std::vector<Course*> Student::getUnregisteredCourses() {
         studentCourseIDs.push_back(stringToInt(id));
     }
 
-    File file("../data/courses.csv");
+    File file(courseConstants().FILE_PATH);
     int numCourses = file.read().size(); // total number of courses
     std::vector<Course*> unregisteredCourses;
     
@@ -268,7 +278,7 @@ std::vector<Course*> Student::getUnregisteredCourses() {
 void Student::addRegisterCourse(std::string courseID) {
     File file(this->filePath);
     this->coursesIDs.push_back(courseID);
-    std::string line = (this->userPrefix + std::to_string(this->id)) + ',' + this->name + ',' + this->username + ',' + this->password + ',' + this->email + ',' + join(this->coursesIDs,'/') + ',' + join(this->friendsIDs,'/') + ',' + join(this->notificationsIDs,'/');
+    std::string line = (this->userPrefix + std::to_string(this->id)) + StudentConstants().FIELDS_SEPARATOR + this->name + StudentConstants().FIELDS_SEPARATOR + this->username + StudentConstants().FIELDS_SEPARATOR + this->password + StudentConstants().FIELDS_SEPARATOR + this->email + StudentConstants().FIELDS_SEPARATOR + join(this->coursesIDs,StudentConstants().COURSE_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->friendsIDs,StudentConstants().FRIENDS_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->notificationsIDs,StudentConstants().NOTIFICATIONS_SEPARATOR);
     file.replaceLine(this->id,line);
 }
 
@@ -279,7 +289,7 @@ std::vector<Student*> Student::getNotFriends() {
     }
     friendsIDs.push_back(this->id);
 
-    File file("../data/students.csv");
+    File file(this->filePath);
     int numCourses = file.read().size(); // total number of courses
     std::vector<Student*> notFriends;
 
@@ -298,7 +308,7 @@ std::vector<Student*> Student::getNotFriends() {
 void Student::addNotification(std::string stuID) {
     File file(this->filePath);
     this->notificationsIDs.push_back(stuID);
-    std::string line = (this->userPrefix + std::to_string(this->id)) + ',' + this->name + ',' + this->username + ',' + this->password + ',' + this->email + ',' + join(this->coursesIDs,'/') + ',' + join(this->friendsIDs,'/') + ',' + join(this->notificationsIDs,'/');
+    std::string line = (this->userPrefix + std::to_string(this->id)) + StudentConstants().FIELDS_SEPARATOR + this->name + StudentConstants().FIELDS_SEPARATOR + this->username + StudentConstants().FIELDS_SEPARATOR + this->password + StudentConstants().FIELDS_SEPARATOR + this->email + StudentConstants().FIELDS_SEPARATOR + join(this->coursesIDs,StudentConstants().COURSE_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->friendsIDs,StudentConstants().FRIENDS_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->notificationsIDs,StudentConstants().NOTIFICATIONS_SEPARATOR);
     file.replaceLine(this->id,line);
 }
 
@@ -310,6 +320,6 @@ void Student::addFriend(std::string friendId) {
     );
     this->friendsIDs.push_back(friendId);
     File file(this->filePath);
-    std::string line = (this->userPrefix + std::to_string(this->id)) + ',' + this->name + ',' + this->username + ',' + this->password + ',' + this->email + ',' + join(this->coursesIDs,'/') + ',' + join(this->friendsIDs,'/') + ',' + join(this->notificationsIDs,'/');
+    std::string line = (this->userPrefix + std::to_string(this->id)) + StudentConstants().FIELDS_SEPARATOR + this->name + StudentConstants().FIELDS_SEPARATOR + this->username + StudentConstants().FIELDS_SEPARATOR + this->password + StudentConstants().FIELDS_SEPARATOR + this->email + StudentConstants().FIELDS_SEPARATOR + join(this->coursesIDs,StudentConstants().COURSE_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->friendsIDs,StudentConstants().FRIENDS_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->notificationsIDs,StudentConstants().NOTIFICATIONS_SEPARATOR);
     file.replaceLine(this->id,line);
 }

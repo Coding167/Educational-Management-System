@@ -10,12 +10,12 @@ class Assignment;
 class Course {
     private:
         int id;
-        char coursePrefix = 'c';
+        std::string coursePrefix;
         std::string name;
         std::string docID;
         std::vector<std::string> studentsIDs;
         std::vector<std::string> assignmentsIDs;
-        std::string filePath = "../data/courses.csv";
+        std::string filePath;
 
     public:
         Course(): id(0) {}

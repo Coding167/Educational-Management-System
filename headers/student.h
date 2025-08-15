@@ -2,6 +2,7 @@
 #define STUDENTS_H_INCLUDED
 
 #include "user.h"
+#include "constants.h"
 #include <vector>
 
 class Student : public User {
@@ -11,15 +12,14 @@ private:
 public:
     Student() {
         this->id = 0;
-        this->userPrefix = 's';
-        this->filePath = "../data/students.csv";
+        this->userPrefix = StudentConstants().PREFIX;
+        this->filePath = StudentConstants().FILE_PATH;
     }
 
     Student(std::string id) { setID(id); }
 
     void setID(std::string id);
 
-    std::string addStudent(std::string name, std::string username, std::string password, std::string email);
     std::vector<Student*> getFriends();
     std::vector<Student*> getNotificatoins();
     std::vector<Course*> getCourses();
