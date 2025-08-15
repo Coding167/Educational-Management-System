@@ -63,6 +63,20 @@ struct DoctorConstants {
     const char COURSE_IDS_SEPARATOR = '/';
 };
 
+struct courseConstants {
+    const std::string FILE_PATH = "../data/courses.csv";
+    const std::string PREFIX = "c";
+    enum CourseFields {
+        ID = 0,
+        NAME = 1,
+        DOC_ID = 2,
+        STUDENTS_IDS = 3,
+        ASSIGNMENTS_IDS = 4
+    };
+    const char FIELDS_SEPARATOR = ',';
+    const char STUDENTS_IDS_SEPARATOR = '/';
+    const char ASSIGNMENTS_IDS_SEPARATOR = '/';
+};
 
 
 #endif // CONSTANTS_H_INCLUDED
