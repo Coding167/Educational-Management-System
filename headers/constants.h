@@ -29,5 +29,40 @@ struct InfoConstants {
     const char FIELDS_SEPARATOR = ',';
 };
 
+struct StudentConstants {
+    const std::string FILE_PATH = "../data/students.csv";
+    const std::string PREFIX = "s";
+    enum StudentFields {
+        ID = 0,
+        NAME = 1,
+        USERNAME = 2,
+        PASSWORD = 3,
+        EMAIL = 4,
+        COURSE_IDS = 5,
+        FRIENDS_IDS = 6,
+        NOTIFICATIONS = 7
+    };
+    const char FIELDS_SEPARATOR = ',';
+    const char COURSE_IDS_SEPARATOR = '/';
+    const char FRIENDS_IDS_SEPARATOR = '/';
+    const char NOTIFICATIONS_SEPARATOR = '/';
+};
+
+struct DoctorConstants {
+    const std::string FILE_PATH = "../data/doctors.csv";
+    const std::string PREFIX = "d";
+    enum DoctorFields {
+        ID = 0,
+        NAME = 1,
+        USERNAME = 2,
+        PASSWORD = 3,
+        EMAIL = 4,
+        COURSE_IDS = 5
+    };
+    const char FIELDS_SEPARATOR = ',';
+    const char COURSE_IDS_SEPARATOR = '/';
+};
+
+
 
 #endif // CONSTANTS_H_INCLUDED
