@@ -2,19 +2,20 @@
 #define DOCTORS_H_INCLUDED
 
 #include "user.h"
+#include "constants.h"
 
 class Doctor: public User {
     public:
         Doctor() {
             this->id = 0;
-            this->userPrefix;
-            this->filePath;
+            this->userPrefix = DoctorConstants().PREFIX;
+            this->filePath = DoctorConstants().FILE_PATH;
         }
         Doctor(std::string id) { this->setID(id); }
 
         void setID(std::string id);
 
-        std::string addDoctor(std::string name, std::string username, std::string password, std::string email);
+        void addCourse(std::string courseID);
 };
 
 void doctorStart(std::string personID);
