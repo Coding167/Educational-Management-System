@@ -34,6 +34,9 @@ void Doctor::addCourse(std::string courseID) {
 void doctorStart(std::string personID) {
     // the doctor
     Doctor doc(personID);
+    // welcome message
+    std::cout<<"Welcome Doctor "<<doc.getName()<<std::endl;
+
     while (true) {
         // menu
         std::cout<<"\nPlease Enter a Choice:\n"

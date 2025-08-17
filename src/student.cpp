@@ -24,6 +24,9 @@ void Student::setID(std::string id) {
 void studentStart(std::string personID) {
     // the student
     Student stu(personID);
+    // Welcome message
+    std::cout<<"Welcome "<<stu.getName()<<std::endl;
+
     /* 
     1- My Profile           ✅
     2- Register in Course   ✅
