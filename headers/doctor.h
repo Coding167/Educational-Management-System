@@ -14,6 +14,8 @@ class Doctor: public User {
         Doctor(std::string id) { this->setID(id); }
 
         void setID(std::string id);
+
+        void addCourse(std::string courseID);
 };
 
 void doctorStart(std::string personID);

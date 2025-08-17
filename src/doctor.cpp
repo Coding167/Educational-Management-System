@@ -21,6 +21,16 @@ void Doctor::setID(std::string id) {
     this->coursesIDs = split(parts.at(DoctorConstants().COURSE_IDS),DoctorConstants().COURSE_IDS_SEPARATOR);
 }
 
+void Doctor::addCourse(std::string courseID) {
+    File file(this->filePath);
+    std::vector<std::string> parts = split(file.readLine(this->id),DoctorConstants().FIELDS_SEPARATOR);
+    std::vector<std::string> cs = split(parts.at(DoctorConstants().COURSE_IDS),DoctorConstants().COURSE_IDS_SEPARATOR);
+
+    cs.push_back(courseID);
+    parts.at(5) = join(cs,DoctorConstants().COURSE_IDS_SEPARATOR);
+    file.replaceLine(this->id,join(parts,DoctorConstants().FIELDS_SEPARATOR));
+}
+
 void doctorStart(std::string personID) {
     // the doctor
     Doctor doc(personID);
@@ -47,15 +57,9 @@ void doctorStart(std::string personID) {
             std::cout<<"Enter the name of the Course: ";
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::getline(std::cin,name);
-
+            // Create the course and add it to the doctors and courses files
             std::string courseID = Course::addCourse(name,doc.getID());
-            File file(DoctorConstants().FILE_PATH);
-            std::vector<std::string> parts = split(file.readLine(stringToInt(doc.getID())),DoctorConstants().FIELDS_SEPARATOR);
-            std::vector<std::string> cs = split(parts.at(DoctorConstants().COURSE_IDS),DoctorConstants().COURSE_IDS_SEPARATOR);
-
-            cs.push_back(courseID);
-            parts.at(5) = join(cs,DoctorConstants().COURSE_IDS_SEPARATOR);
-            file.replaceLine(stringToInt(doc.getID()),join(parts,DoctorConstants().FIELDS_SEPARATOR));
+            doc.addCourse(courseID);
         } else if (choice == 3) {
             // Add Assignment
             std::vector<Course*> courses = doc.getCourses();
@@ -63,11 +67,11 @@ void doctorStart(std::string personID) {
                 std::cout << "You have no courses.\n";
                 continue;
             }
-
+            // Show the courses
             for (int i = 0; i < courses.size(); ++i) {
                 std::cout << i + 1 << ". " << courses[i]->getName() << " - " << courses[i]->getID() << std::endl;
             }
-
+            // Select a course
             int c = validateChoice(1, courses.size(), "Enter the number of Course to view it: ");
             Course* currentCourse = courses[c - 1];
 
@@ -75,7 +79,7 @@ void doctorStart(std::string personID) {
             std::vector<std::string> answers;
             int n;
 
-            std::cin.ignore(10000, '\n'); // ignore leftover newline ONCE
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
             std::cout << "Enter the question: ";
             std::getline(std::cin, question);
