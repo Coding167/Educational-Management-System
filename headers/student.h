@@ -32,4 +32,16 @@ public:
 
 void studentStart(std::string personID);
 
+class Notification {
+    private:
+        Student* from;
+        Student* to;
+
+    public:
+        Notification() {}
+        Notification(Student* from, Student* to): from(from), to(to) {}
+
+        std::vector<Student*> getNotifiedStudents();
+        void send();
+};
 #endif // STUDENTS_H_INCLUDED
