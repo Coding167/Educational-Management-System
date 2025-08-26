@@ -25,6 +25,7 @@ void studentStart(std::string personID) {
     // the student
     Student stu(personID);
     Notification noti(&stu);
+    Friend fri(&stu);
     // Welcome message
     std::cout<<"Welcome "<<stu.getName()<<std::endl;
 
@@ -59,7 +60,7 @@ void studentStart(std::string personID) {
             <<"Name: "<<stu.getName()<<std::endl
             <<"Username: "<<stu.getUsername()<<std::endl
             <<"You have "<<stu.getCourses().size()<<" Course(s)"<<std::endl
-            <<"You have "<<stu.getFriends().size()<<" Friend(s) and "<<noti.getNotificatoins().size()<<" Notification(s)\n";
+            <<"You have "<<fri.getFriends().size()<<" Friend(s) and "<<noti.getNotificatoins().size()<<" Notification(s)\n";
         }else if (choice == 2) {
             // Register in Course
             std::vector<Course*> courses = stu.getUnregisteredCourses();
@@ -149,17 +150,18 @@ void studentStart(std::string personID) {
             std::cout<<"You Solve "<<count<<" Out of "<<currentAssignment.size()<<std::endl;
         } else if (choice == 6) {
             // Add Friend
-            std::vector<Student*> notFriends = stu.getNotFriends();
+            std::vector<Student*> notFriends = fri.getNotFriends();
             for (int i = 0 ; i < notFriends.size() ; i++) {
                 std::cout<<i+1<<". "<<notFriends.at(i)->getName()<<std::endl;
             }
             int c = validateChoice(1,notFriends.size(),"Enter the number of friend to view it: ");
             std::cout<<std::endl;
             Student* currentFriend = notFriends.at(c-1);
+            Friend currentFri(currentFriend);
             std::cout<<"ID: "<<currentFriend->getID()
                     <<"\nName: "<<currentFriend->getName()
                     <<"\nUsername: "<<currentFriend->getUsername()
-                    <<"\nHe has "<<currentFriend->getCourses().size()<<" Course(s) and "<<currentFriend->getFriends().size()<<" Friend(s)\n";
+                    <<"\nHe has "<<currentFriend->getCourses().size()<<" Course(s) and "<<currentFri.getFriends().size()<<" Friend(s)\n";
             c = validateChoice(0,1,"Do you want to make this user your friend [1 -> yes , 0 -> no]: ");
             std::cout<<std::endl;
             if (c) {
@@ -167,7 +169,7 @@ void studentStart(std::string personID) {
             }
         } else if (choice == 7) {
             // List my Friends
-            std::vector<Student*> friends = stu.getFriends();
+            std::vector<Student*> friends = fri.getFriends();
             if (friends.size() == 0) {
                 std::cout<<"You haven't Friends.\n";
                 continue;
@@ -179,11 +181,12 @@ void studentStart(std::string personID) {
             int c = validateChoice(1,friends.size(),"Enter your friend number: ");
             std::cout<<std::endl;
             Student* currentFriend = friends.at(c-1);
+            Friend currentFri(currentFriend);
             std::cout<<"ID: "<<currentFriend->getID()
                     <<"\nName: "<<currentFriend->getName()
                     <<"\nUsername: "<<currentFriend->getUsername()
                     <<"\nHe Register in "<<currentFriend->getCourses().size()<<" Course(s)"
-                    <<"\nHe has "<<currentFriend->getFriends().size()<<" Friend(s)\n";
+                    <<"\nHe has "<<currentFri.getFriends().size()<<" Friend(s)\n";
         } else if (choice == 8) {
             // Get Notifications
             std::vector<Student*> notifications = noti.getNotificatoins();
@@ -197,15 +200,16 @@ void studentStart(std::string personID) {
             int c = validateChoice(1,notifications.size(),"Enter your friend number: ");
             std::cout<<std::endl;
             Student* currentNotification = notifications.at(c-1);
+            Friend currentFri(currentNotification);
             std::cout<<"ID: "<<currentNotification->getID()
                     <<"\nName: "<<currentNotification->getName()
                     <<"\nUsername: "<<currentNotification->getUsername()
                     <<"\nHe Register in "<<currentNotification->getCourses().size()<<" Course(s)"
-                    <<"\nHe has "<<currentNotification->getFriends().size()<<" Friend(s)\n";
+                    <<"\nHe has "<<currentFri.getFriends().size()<<" Friend(s)\n";
             c = validateChoice(0,1,"Do you want to make this user your friend [1 -> yes , 0 -> no]: ");
             if (c) {
-                stu.addFriend(currentNotification->getID());
-                currentNotification->addFriend(stu.getID());
+                fri.addFriend(currentNotification);
+                currentFri.addFriend(&stu);
             }
         }else {
             // Log out
@@ -215,20 +219,6 @@ void studentStart(std::string personID) {
     welcome();
 }
 
-std::vector<Student*> Student::getFriends() {
-    if (friendsIDs.empty()) return {};
-    if (friendsIDs.size() == 1) {
-        if (friendsIDs.at(0).empty()) {
-            return {};
-        }
-    }
-    std::vector<Student*> studs;
-    for (std::string s: this->friendsIDs) {
-        Student* stud = new Student(s);
-        studs.push_back(stud);
-    }
-    return studs;
-}
 std::vector<Course*> Student::getCourses() {
     if (this->coursesIDs.empty()) return {};
     if (this->coursesIDs.size() == 1) {
@@ -272,40 +262,6 @@ void Student::addRegisterCourse(std::string courseID) {
     file.replaceLine(this->id,line);
 }
 
-std::vector<Student*> Student::getNotFriends() {
-    std::vector<int> friendsIDs;
-    for (std::string id : this->friendsIDs) {
-        friendsIDs.push_back(stringToInt(id));
-    }
-    friendsIDs.push_back(this->id);
-
-    File file(this->filePath);
-    int numCourses = file.read().size(); // total number of courses
-    std::vector<Student*> notFriends;
-
-    
-    for (int i = 1; i <= numCourses; i++) {
-        if (std::find(friendsIDs.begin(), friendsIDs.end(), i) == friendsIDs.end()) {
-            std::string id = (this->userPrefix + std::to_string(i));
-            Student* c = new Student(id);
-            notFriends.push_back(c);
-        }
-    }
-
-    return notFriends;
-}
-
-void Student::addFriend(std::string friendId) {
-    // students.erase(std::remove(students.begin(), students.end(), "b"), students.end());
-    this->notificationsIDs.erase(
-        std::remove(this->notificationsIDs.begin(), this->notificationsIDs.end(), friendId),
-        this->notificationsIDs.end()
-    );
-    this->friendsIDs.push_back(friendId);
-    File file(this->filePath);
-    std::string line = (this->userPrefix + std::to_string(this->id)) + StudentConstants().FIELDS_SEPARATOR + this->name + StudentConstants().FIELDS_SEPARATOR + this->username + StudentConstants().FIELDS_SEPARATOR + this->password + StudentConstants().FIELDS_SEPARATOR + this->email + StudentConstants().FIELDS_SEPARATOR + join(this->coursesIDs,StudentConstants().COURSE_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->friendsIDs,StudentConstants().FRIENDS_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->notificationsIDs,StudentConstants().NOTIFICATIONS_SEPARATOR);
-    file.replaceLine(this->id,line);
-}
 
 // Notifications
 Notification::Notification(Student* from) {
@@ -338,4 +294,60 @@ void Notification::send(Student* to) {
     parts.at(StudentConstants().NOTIFICATIONS) = join(NotificationsIDs,StudentConstants().NOTIFICATIONS_SEPARATOR);
     line = join(parts,StudentConstants().FIELDS_SEPARATOR);
     file.replaceLine(stringToInt(to->getID()),line);
+}
+
+// Friend
+Friend::Friend(Student* stu) {setStudent(stu);}
+
+void Friend::setStudent(Student* stu) {
+    this->stu = stu;
+    File file(StudentConstants().FILE_PATH);
+    std::vector<std::string> parts = split(file.readLine(stringToInt(this->stu->getID())), StudentConstants().FIELDS_SEPARATOR);
+    this->friends = split(parts.at(StudentConstants().FRIENDS_IDS), StudentConstants().FRIENDS_IDS_SEPARATOR);
+}
+
+std::vector<Student*> Friend::getFriends() {
+    if (this->friends.empty()) return {};
+    std::vector<Student*> studs;
+    for (std::string id: this->friends) {
+        Student* stu = new Student(id);
+        studs.push_back(stu);
+    }
+    return studs;
+}
+
+std::vector<Student*> Friend::getNotFriends() {
+    std::vector<int> friendsIDs;
+    for (std::string id : this->friends) {
+        friendsIDs.push_back(stringToInt(id));
+    }
+    friendsIDs.push_back(stringToInt(this->stu->getID()));
+
+    File file(StudentConstants().FILE_PATH);
+    int numCourses = file.read().size(); // total number of courses
+    std::vector<Student*> notFriends;
+
+    
+    for (int i = 1; i <= numCourses; i++) {
+        if (std::find(friendsIDs.begin(), friendsIDs.end(), i) == friendsIDs.end()) {
+            std::string id = (StudentConstants().PREFIX + std::to_string(i));
+            Student* c = new Student(id);
+            notFriends.push_back(c);
+        }
+    }
+
+    return notFriends;
+}
+
+void Friend::addFriend(Student* fri) {
+    this->friends.push_back(fri->getID());
+    File file(StudentConstants().FILE_PATH);
+    std::string line = file.readLine(stringToInt(this->stu->getID()));
+    std::vector<std::string> parts = split(line, StudentConstants().FIELDS_SEPARATOR);
+    std::vector<std::string> n = split(parts.at(StudentConstants().NOTIFICATIONS), StudentConstants().NOTIFICATIONS_SEPARATOR);
+    n.erase(remove(n.begin(), n.end(), fri->getID()), n.end());
+    parts.at(StudentConstants().NOTIFICATIONS) = join(n, StudentConstants().NOTIFICATIONS_SEPARATOR);
+    parts.at(StudentConstants().FRIENDS_IDS) = join(this->friends, StudentConstants().FRIENDS_IDS_SEPARATOR);
+    line = join(parts, StudentConstants().FIELDS_SEPARATOR);
+    file.replaceLine(stringToInt(this->stu->getID()),line);
 }

@@ -20,12 +20,9 @@ public:
 
     void setID(std::string id);
 
-    std::vector<Student*> getFriends();
     std::vector<Course*> getCourses();
     std::vector<Course*> getUnregisteredCourses();
     void addRegisterCourse(std::string courseID);
-    std::vector<Student*> getNotFriends();
-    void addFriend(std::string friendId);
 };
 
 void studentStart(std::string personID);
@@ -59,6 +56,6 @@ class Friend {
         std::vector<Student*> getFriends();
         std::vector<Student*> getNotFriends();
 
-        void addFriend(std::string friendId);
+        void addFriend(Student* fri);
 };
 #endif // STUDENTS_H_INCLUDED
