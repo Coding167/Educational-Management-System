@@ -39,21 +39,20 @@ void doctorStart(std::string personID) {
 
     while (true) {
         // menu
-        std::cout<<"\nPlease Enter a Choice:\n"
-                <<"1- My Profile\n"
-                <<"2- Create a Course\n"
-                <<"3- Add Assignment\n"
-                <<"4- List my Courses\n"
-                <<"5- Log out\n";
-        int choice = validateChoice(1,5,"Enter Choice: ");
+        std::cout<<"\n1. View Profile\n"
+                <<"2. Create a Course\n"
+                <<"3. Add Assignment\n"
+                <<"4. My Courses\n"
+                <<"5. Log Out\n";
+        int choice = validateChoice(1,5,"Please enter your choice: ");
         std::cout<<std::endl;
 
         if (choice == 1) {
             // See his profile
-            std::cout<<"ID: "<<doc.getID()
-                    <<"\nName: "<<doc.getName()
-                    <<"\nUsername: "<<doc.getUsername()
-                    <<"\nYou have created "<<doc.getCourses().size()<<" Course(s)\n";
+            std::cout<<"ID        : "<<doc.getID()<<std::endl
+                     <<"Name      : "<<doc.getName()<<std::endl
+                     <<"Username  : "<<doc.getUsername()<<std::endl
+                     <<"Courses   : You have created [ "<<doc.getCourses().size()<<" ] Created\n";
         } else if (choice == 2 ) {
             // Create a Course
             std::string name;

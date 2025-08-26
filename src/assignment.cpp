@@ -45,7 +45,7 @@ void Assignment::addStudent(std::string stuID, bool solved) {
         this->students_ns_IDs.push_back(stuID);
     // store the updated data in the file
     File file(this->filePath);
-    std::string line = (this->assignmentPrefix + std::to_string(id)) + AssignmentConstants().FIELDS_SEPARATOR + this->question + AssignmentConstants().FIELDS_SEPARATOR + join(answers,AssignmentConstants().ANSWERS_SEPARATOR) + AssignmentConstants().FIELDS_SEPARATOR + std::to_string(this->correctAnswer) + AssignmentConstants().FIELDS_SEPARATOR + join(this->students_s_IDs,AssignmentConstants().STUDENTS_SOLVED) + AssignmentConstants().FIELDS_SEPARATOR + join(this->students_ns_IDs,AssignmentConstants().STUDENTS_NOT_SOLVED);
+    std::string line = (this->assignmentPrefix + std::to_string(id)) + AssignmentConstants().FIELDS_SEPARATOR + this->question + AssignmentConstants().FIELDS_SEPARATOR + join(answers,AssignmentConstants().ANSWERS_SEPARATOR) + AssignmentConstants().FIELDS_SEPARATOR + std::to_string(this->correctAnswer) + AssignmentConstants().FIELDS_SEPARATOR + join(this->students_s_IDs,AssignmentConstants().STUDENTS_SEPARATOR) + AssignmentConstants().FIELDS_SEPARATOR + join(this->students_ns_IDs,AssignmentConstants().STUDENTS_SEPARATOR);
     file.replaceLine(this->id,line);
 }
 

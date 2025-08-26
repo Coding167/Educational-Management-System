@@ -29,95 +29,111 @@ void studentStart(std::string personID) {
     // Welcome message
     std::cout<<"Welcome "<<stu.getName()<<std::endl;
 
-    /* 
-    1- My Profile           ✅
-    2- Register in Course   ✅
-    3- List My Courses      ✅
-    4- Solve Assignment     ✅
-    5- Assignment Report    ✅
-    6- Add Friend           ✅
-    7- List my Friends      ✅
-    8- Get Notifications    ✅
-    9- Log out              ✅
-    */
     while (true) {
         // menu
-        std::cout<<"\nPlease make a choice:\n"
-        <<"1- My Profile\n"
-        <<"2- Register in Course\n"
-        <<"3- List My Courses\n"
-        <<"4- Solve Assignment\n"
-        <<"5- Assignment Report\n"
-        <<"6- Add Friend\n"
-        <<"7- List my Friends\n"
-        <<"8- Get Notifications\n"
-        <<"9- Log out\n";
-        int choice = validateChoice(1,9,"Enter the Choice: ");
+        std::cout<<"\n1. View Profile\n"
+        <<"2. Enroll in Course\n"
+        <<"3. My Courses\n"
+        <<"4. Solve Assignments\n"
+        <<"5. View Assignment Report\n"
+        <<"6. Add a Friend\n"
+        <<"7. Friends List\n"
+        <<"8. Notifications\n"
+        <<"9. Log Out\n";
+        int choice = validateChoice(1,9,"Please enter your choice: ");
         std::cout<<std::endl;
         if (choice == 1) {
             // My Profile
-            std::cout<<"ID: "<<stu.getID()<<std::endl
-            <<"Name: "<<stu.getName()<<std::endl
-            <<"Username: "<<stu.getUsername()<<std::endl
-            <<"You have "<<stu.getCourses().size()<<" Course(s)"<<std::endl
-            <<"You have "<<fri.getFriends().size()<<" Friend(s) and "<<noti.getNotificatoins().size()<<" Notification(s)\n";
+            std::cout<<"ID            : "<<stu.getID()<<std::endl
+                     <<"Name          : "<<stu.getName()<<std::endl
+                     <<"Username      : "<<stu.getUsername()<<std::endl
+                     <<"Courses       : You are enrolled in [ "
+                     <<stu.getCourses().size()<<" ] Course(s)\n"
+                     <<"Friends       : You have [ "
+                     <<fri.getFriends().size()<<" ] Friend(s)\n"
+                     <<"Notifications : [ "
+                     <<noti.getNotificatoins().size()<<" ] Notification(s)\n";
         }else if (choice == 2) {
             // Register in Course
             std::vector<Course*> courses = stu.getUnregisteredCourses();
+            if (courses.empty()) {
+                std::cout << "\nYou are already registered in all available courses!\n";
+                continue;
+            }
+            std::cout << "\nAvailable Courses:\n";
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<std::endl;
             }
-            int c = validateChoice(1,courses.size(),"Enter The number of Course to View it: ");
+            int c = validateChoice(1,courses.size(),"\nEnter the number of the course to view details: ");
             std::cout<<std::endl;
             Course* currentCourse = courses.at(c-1);
-            std::cout<<"Code: "<<currentCourse->getID()
-                    <<"\nName: "<<currentCourse->getName()
-                    <<"\nCreated by: "<<currentCourse->getDoctor()
-                    <<"\nHas "<<currentCourse->getAssignments().size()<<" Assignment(s) and "<<currentCourse->getStudetns().size()<<" Student(s)\n";
-            int yOrN = validateChoice(0,1,"Do you want to Register [1 -> yes , 0 -> no]: ");
+            std::cout<<"Course Code       : "<<currentCourse->getID()<<std::endl
+                    <<"Course Name       : "<<currentCourse->getName()<<std::endl
+                    <<"Created by        : Dr. "<<currentCourse->getDoctor()<<std::endl
+                    <<"Assignments       : [ "<<currentCourse->getAssignments().size()<<" ] Assignment(s)\n"
+                    <<"Enrolled Students : [ "<<currentCourse->getStudetns().size()<<" ] Student(s)\n\n";
+            int yOrN = validateChoice(0,1,"Do you want to register in this course? [1 = Yes, 0 = No]: ");
             std::cout<<std::endl;
             if (yOrN) {
                 currentCourse->addStudent(personID);
                 stu.addRegisterCourse(currentCourse->getID());
+                std::cout << "Successfully registered in \"" << currentCourse->getName() << "\"!\n";
             }
         } else if (choice == 3) {
             // List my courses
             std::vector<Course*> courses = stu.getCourses();
             if (courses.size() == 0) {
-                std::cout<<"You haven't Courses.\n";
+                std::cout << "\nYou are not enrolled in any courses yet.\n";
+                std::cout << "Go to 'Enroll in Course' to join one!\n";
                 continue;
             }
+            std::cout << "\nYour Courses:\n";
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
             }
-            int c = validateChoice(1,courses.size(),"Enter The number of Course to View it: ");
+            std::cout<<std::endl;
+            int c = validateChoice(1,courses.size(),"Enter the number of the course to view details: ");
             Course* currentCourse = courses.at(c-1);
             std::cout<<std::endl;
-            std::cout<<"Code: "<<currentCourse->getID()
-                    <<"\nName: "<<currentCourse->getName()
-                    <<"\nCreated by: "<<currentCourse->getDoctor()
-                    <<"\nHas "<<currentCourse->getAssignments().size()<<" Assignment(s) and "<<currentCourse->getStudetns().size()<<" Student(s)\n";
+            std::cout<<"Course Code       : "<<currentCourse->getID()<<std::endl
+                     <<"Course Name       : "<<currentCourse->getName()<<std::endl
+                     <<"Created by        : Dr. "<<currentCourse->getDoctor()<<std::endl
+                     <<"Assignments       : [ "<<currentCourse->getAssignments().size()<<" ] Assignment(s)\n"
+                     <<"Enrolled Students : [ "<<currentCourse->getStudetns().size()<<" ] Student(s)\n";
         } else if (choice == 4) {
             // Solve Assignment
             std::vector<Course*> courses = stu.getCourses();
+            if (courses.empty()) {
+                std::cout << "\nYou are not enrolled in any courses yet.\n";
+                std::cout << "Go to 'Enroll in Course' to join one!\n";
+                continue;
+            }
+            std::cout << "\nYour Courses:\n";
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
             }
-            int c = validateChoice(1,courses.size(),"Enter The number of Course to View it: ");
+            std::cout<<std::endl;
+            int c = validateChoice(1,courses.size(),"Enter the number of the course to view: ");
             Course* currentCourse = courses.at(c-1);
             std::cout<<std::endl;
-            std::cout<<"Code: "<<currentCourse->getID()
-                    <<"\nName: "<<currentCourse->getName()
-                    <<"\nCreated by: "<<currentCourse->getDoctor()
-                    <<"\nHas "<<currentCourse->getAssignments().size()<<" Assignment(s) and "<<currentCourse->getStudetns().size()<<" Student(s)\n";
-            int a = validateChoice(0,1,"Do you want to Solve Assignments [1 -> yes , 0 -> no]: ");
+            std::cout<<"Course Code       : "<<currentCourse->getID()<<std::endl
+                     <<"Course Name       : "<<currentCourse->getName()<<std::endl
+                     <<"Created by        : Dr. "<<currentCourse->getDoctor()<<std::endl
+                     <<"Assignments       : [ "<<currentCourse->getAssignments().size()<<" ] Assignment(s)\n"
+                     <<"Enrolled Students : [ "<<currentCourse->getStudetns().size()<<" ] Student(s)\n";
+            int a = validateChoice(0,1,"Do you want to solve the assignments? [1 = Yes, 0 = No]: ");
             if (a) {
                 std::vector<Assignment*> assignments = stu.getCourses().at(c-1)->getAssignments();
+                if (assignments.empty()) {
+                    std::cout << "\nNo assignments available for this course yet.\n";
+                    continue;
+                }
+                std::cout << "\nStarting Assignments...\n";
                 for (int i = 0 ; i < assignments.size() ; i++) {
                     std::cout<<"[ "<<i+1<<" ] "<<assignments.at(i)->getQuestion()<<std::endl;
                     std::vector<std::string> answers = assignments.at(i)->getAnswers();
                     for (int j = 0 ; j < answers.size() ; j++) {
-                        std::cout<<j+1<<". "<<answers.at(j)<<std::endl;
+                        std::cout<<"  "<<j+1<<". "<<answers.at(j)<<std::endl;
                     }
                     int s = validateChoice(1,answers.size(),"Enter the number of answer: ");
                     if (answers.at(s-1) == assignments.at(i)->getCorrectAnswer()) {
@@ -125,56 +141,73 @@ void studentStart(std::string personID) {
                         std::cout<<"Correct!\n";
                     }else {
                         assignments.at(i)->addStudent(stu.getID(),false);
-                        std::cout<<"Wrong!\n";
+                        std::cout<<"Wrong!  Correct answer was: "
+                                << assignments.at(i)->getCorrectAnswer() << "\n";
                     }
                 }
                 int count = 0;
                 for (Assignment* a: assignments) {
                     count += a->isSolved(personID);
                 }
-                std::cout<<"You Solve "<<count<<" Out of "<<assignments.size()<<std::endl;
+                std::cout<<"Results: You solved "<<count<<" Out of "<<assignments.size()<<" correctly."<<std::endl;
             }
         } else if (choice == 5) {
             // Assignment Report
             std::vector<Course*> courses = stu.getCourses();
+            if (courses.empty()) {
+                std::cout << "\nYou are not enrolled in any courses yet.\n";
+                std::cout << "Go to 'Enroll in Course' to join one!\n";
+                continue;
+            }
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
             }
-            int c = validateChoice(1,courses.size(),"Enter The number of Course to View it: ");
+            int c = validateChoice(1,courses.size(),"Please enter the number of the course you would like to view: ");
             std::vector<Assignment*> currentAssignment = courses.at(c-1)->getAssignments();
+            if (currentAssignment.empty()) {
+                std::cout << "This course has no assignments yet.\n";
+                continue;
+            }
             std::cout<<std::endl;
             int count = 0;
             for (Assignment* a: currentAssignment) {
                 count += a->isSolved(personID);
             }
-            std::cout<<"You Solve "<<count<<" Out of "<<currentAssignment.size()<<std::endl;
+            std::cout<<"You have solved "<<count<<" Out of "<<currentAssignment.size()<<" Assignment(s)"<<std::endl;
         } else if (choice == 6) {
             // Add Friend
             std::vector<Student*> notFriends = fri.getNotFriends();
+            if (notFriends.empty()) {
+                std::cout << "No users available to add as friends. You're connected with everyone!\n";
+                continue;
+            }
+            std::cout << "\nAvailable Users to Add as Friend:\n";
             for (int i = 0 ; i < notFriends.size() ; i++) {
                 std::cout<<i+1<<". "<<notFriends.at(i)->getName()<<std::endl;
             }
-            int c = validateChoice(1,notFriends.size(),"Enter the number of friend to view it: ");
+            int c = validateChoice(1,notFriends.size(),"Enter the number of the user to view details: ");
             std::cout<<std::endl;
             Student* currentFriend = notFriends.at(c-1);
             Friend currentFri(currentFriend);
-            std::cout<<"ID: "<<currentFriend->getID()
-                    <<"\nName: "<<currentFriend->getName()
-                    <<"\nUsername: "<<currentFriend->getUsername()
-                    <<"\nHe has "<<currentFriend->getCourses().size()<<" Course(s) and "<<currentFri.getFriends().size()<<" Friend(s)\n";
-            c = validateChoice(0,1,"Do you want to make this user your friend [1 -> yes , 0 -> no]: ");
+            std::cout<<"ID       : "<<currentFriend->getID()<<std::endl
+                     <<"Name     : "<<currentFriend->getName()<<std::endl
+                     <<"Username : "<<currentFriend->getUsername()<<std::endl
+                     <<"Courses  : [ "<<currentFriend->getCourses().size()<<" ] Course(s)\n"
+                     <<"Friends  : [ "<<currentFri.getFriends().size()<<" ] Friend(s)\n\n";
+            c = validateChoice(0,1,"Do you want to send a friend request? [1 = Yes | 0 = No]: ");
             std::cout<<std::endl;
             if (c) {
                 noti.send(currentFriend);
+                    std::cout << "Friend request sent to " << currentFriend->getName() << "\n";
             }
         } else if (choice == 7) {
             // List my Friends
             std::vector<Student*> friends = fri.getFriends();
             if (friends.size() == 0) {
-                std::cout<<"You haven't Friends.\n";
+                std::cout<<"You don't have any friends yet.\n";
                 continue;
             }
-            std::cout<<"You have "<<friends.size()<<" Friend(s)\n";
+            std::cout<<"You have "<<friends.size()<<" Friend(s):\n";
             for (int i = 0 ; i < friends.size() ; i++) {
                 std::cout<<i+1<<". "<<friends.at(i)->getName()<<std::endl;
             }
@@ -182,34 +215,36 @@ void studentStart(std::string personID) {
             std::cout<<std::endl;
             Student* currentFriend = friends.at(c-1);
             Friend currentFri(currentFriend);
-            std::cout<<"ID: "<<currentFriend->getID()
-                    <<"\nName: "<<currentFriend->getName()
-                    <<"\nUsername: "<<currentFriend->getUsername()
-                    <<"\nHe Register in "<<currentFriend->getCourses().size()<<" Course(s)"
-                    <<"\nHe has "<<currentFri.getFriends().size()<<" Friend(s)\n";
+            std::cout<<"ID       : "<<currentFriend->getID()<<std::endl
+                     <<"Name     : "<<currentFriend->getName()<<std::endl
+                     <<"Username : "<<currentFriend->getUsername()<<std::endl
+                     <<"Courses  : [ "<<currentFriend->getCourses().size()<<" ] Course(s)\n"
+                     <<"Friends  : [ "<<currentFri.getFriends().size()<<" ] Friend(s)\n";
         } else if (choice == 8) {
             // Get Notifications
             std::vector<Student*> notifications = noti.getNotificatoins();
             if (notifications.size() == 0) {
-                std::cout<<"You haven't Notifications.\n";
+                std::cout<<"You don't have any new notifications.\n";
                 continue;
             }
+            std::cout << "\nYou have [ " << notifications.size() << " ] new notification(s):\n";
             for (int i = 0 ; i < notifications.size() ; i++) {
                 std::cout<<i+1<<". "<<notifications.at(i)->getName()<<std::endl;
             }
-            int c = validateChoice(1,notifications.size(),"Enter your friend number: ");
+            int c = validateChoice(1,notifications.size(),"Enter the number to view details: ");
             std::cout<<std::endl;
             Student* currentNotification = notifications.at(c-1);
             Friend currentFri(currentNotification);
-            std::cout<<"ID: "<<currentNotification->getID()
-                    <<"\nName: "<<currentNotification->getName()
-                    <<"\nUsername: "<<currentNotification->getUsername()
-                    <<"\nHe Register in "<<currentNotification->getCourses().size()<<" Course(s)"
-                    <<"\nHe has "<<currentFri.getFriends().size()<<" Friend(s)\n";
-            c = validateChoice(0,1,"Do you want to make this user your friend [1 -> yes , 0 -> no]: ");
+            std::cout<<"ID       : "<<currentNotification->getID()<<std::endl
+                     <<"Name     : "<<currentNotification->getName()<<std::endl
+                     <<"Username : "<<currentNotification->getUsername()<<std::endl
+                     <<"Courses  : [ "<<currentNotification->getCourses().size()<<" ] Course(s)"<<std::endl
+                     <<"Friends  : [ "<<currentFri.getFriends().size()<<" ] Friend(s)\n";
+            c = validateChoice(0,1,"Do you want to accept this friend request? [1 -> Yes | 0 -> No]: ");
             if (c) {
                 fri.addFriend(currentNotification);
                 currentFri.addFriend(&stu);
+                std::cout << "You are now friends with " << currentNotification->getName() << "!\n";
             }
         }else {
             // Log out
