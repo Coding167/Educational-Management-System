@@ -56,21 +56,28 @@ void studentStart(std::string personID) {
         }else if (choice == 2) {
             // Register in Course
             std::vector<Course*> courses = stu.getUnregisteredCourses();
+            if (courses.empty()) {
+                std::cout << "\nYou are already registered in all available courses!\n";
+                continue;
+            }
+            std::cout << "\nAvailable Courses:\n";
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<std::endl;
             }
-            int c = validateChoice(1,courses.size(),"Enter The number of Course to View it: ");
+            int c = validateChoice(1,courses.size(),"\nEnter the number of the course to view details: ");
             std::cout<<std::endl;
             Course* currentCourse = courses.at(c-1);
-            std::cout<<"Code: "<<currentCourse->getID()
-                    <<"\nName: "<<currentCourse->getName()
-                    <<"\nCreated by: "<<currentCourse->getDoctor()
-                    <<"\nHas "<<currentCourse->getAssignments().size()<<" Assignment(s) and "<<currentCourse->getStudetns().size()<<" Student(s)\n";
-            int yOrN = validateChoice(0,1,"Do you want to Register [1 -> yes , 0 -> no]: ");
+            std::cout<<"Course Code       : "<<currentCourse->getID()<<std::endl
+                    <<"Course Name       : "<<currentCourse->getName()<<std::endl
+                    <<"Created by        : Dr. "<<currentCourse->getDoctor()<<std::endl
+                    <<"Assignments       : [ "<<currentCourse->getAssignments().size()<<" ] Assignment(s)\n"
+                    <<"Enrolled Students : [ "<<currentCourse->getStudetns().size()<<" ] Student(s)\n\n";
+            int yOrN = validateChoice(0,1,"Do you want to register in this course? [1 = Yes, 0 = No]: ");
             std::cout<<std::endl;
             if (yOrN) {
                 currentCourse->addStudent(personID);
                 stu.addRegisterCourse(currentCourse->getID());
+                std::cout << "Successfully registered in \"" << currentCourse->getName() << "\"!\n";
             }
         } else if (choice == 3) {
             // List my courses
