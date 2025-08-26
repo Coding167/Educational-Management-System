@@ -49,10 +49,10 @@ void doctorStart(std::string personID) {
 
         if (choice == 1) {
             // See his profile
-            std::cout<<"ID: "<<doc.getID()
-                    <<"\nName: "<<doc.getName()
-                    <<"\nUsername: "<<doc.getUsername()
-                    <<"\nYou have created "<<doc.getCourses().size()<<" Course(s)\n";
+            std::cout<<"ID        : "<<doc.getID()<<std::endl
+                     <<"Name      : "<<doc.getName()<<std::endl
+                     <<"Username  : "<<doc.getUsername()<<std::endl
+                     <<"Courses   : You have created [ "<<doc.getCourses().size()<<" ] Created\n";
         } else if (choice == 2 ) {
             // Create a Course
             std::string name;

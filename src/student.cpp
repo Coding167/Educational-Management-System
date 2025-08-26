@@ -44,11 +44,15 @@ void studentStart(std::string personID) {
         std::cout<<std::endl;
         if (choice == 1) {
             // My Profile
-            std::cout<<"ID: "<<stu.getID()<<std::endl
-            <<"Name: "<<stu.getName()<<std::endl
-            <<"Username: "<<stu.getUsername()<<std::endl
-            <<"You have "<<stu.getCourses().size()<<" Course(s)"<<std::endl
-            <<"You have "<<fri.getFriends().size()<<" Friend(s) and "<<noti.getNotificatoins().size()<<" Notification(s)\n";
+            std::cout<<"ID            : "<<stu.getID()<<std::endl
+                     <<"Name          : "<<stu.getName()<<std::endl
+                     <<"Username      : "<<stu.getUsername()<<std::endl
+                     <<"Courses       : You are enrolled in [ "
+                     <<stu.getCourses().size()<<" ] Course(s)\n"
+                     <<"Friends       : You have [ "
+                     <<fri.getFriends().size()<<" ] Friend(s)\n"
+                     <<"Notifications : [ "
+                     <<noti.getNotificatoins().size()<<" ] Notification(s)\n";
         }else if (choice == 2) {
             // Register in Course
             std::vector<Course*> courses = stu.getUnregisteredCourses();
