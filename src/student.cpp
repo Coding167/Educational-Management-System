@@ -83,19 +83,23 @@ void studentStart(std::string personID) {
             // List my courses
             std::vector<Course*> courses = stu.getCourses();
             if (courses.size() == 0) {
-                std::cout<<"You haven't Courses.\n";
+                std::cout << "\nYou are not enrolled in any courses yet.\n";
+                std::cout << "Go to 'Register in Course' to join one!\n";
                 continue;
             }
+            std::cout << "\nYour Courses:\n";
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
             }
-            int c = validateChoice(1,courses.size(),"Enter The number of Course to View it: ");
+            std::cout<<std::endl;
+            int c = validateChoice(1,courses.size(),"Enter the number of the course to view details: ");
             Course* currentCourse = courses.at(c-1);
             std::cout<<std::endl;
-            std::cout<<"Code: "<<currentCourse->getID()
-                    <<"\nName: "<<currentCourse->getName()
-                    <<"\nCreated by: "<<currentCourse->getDoctor()
-                    <<"\nHas "<<currentCourse->getAssignments().size()<<" Assignment(s) and "<<currentCourse->getStudetns().size()<<" Student(s)\n";
+            std::cout<<"Course Code       : "<<currentCourse->getID()<<std::endl
+                     <<"Course Name       : "<<currentCourse->getName()<<std::endl
+                     <<"Created by        : Dr. "<<currentCourse->getDoctor()<<std::endl
+                     <<"Assignments       : [ "<<currentCourse->getAssignments().size()<<" ] Assignment(s)\n"
+                     <<"Enrolled Students : [ "<<currentCourse->getStudetns().size()<<" ] Student(s)\n";
         } else if (choice == 4) {
             // Solve Assignment
             std::vector<Course*> courses = stu.getCourses();
