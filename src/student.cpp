@@ -29,30 +29,18 @@ void studentStart(std::string personID) {
     // Welcome message
     std::cout<<"Welcome "<<stu.getName()<<std::endl;
 
-    /* 
-    1- My Profile           ✅
-    2- Register in Course   ✅
-    3- List My Courses      ✅
-    4- Solve Assignment     ✅
-    5- Assignment Report    ✅
-    6- Add Friend           ✅
-    7- List my Friends      ✅
-    8- Get Notifications    ✅
-    9- Log out              ✅
-    */
     while (true) {
         // menu
-        std::cout<<"\nPlease make a choice:\n"
-        <<"1- My Profile\n"
-        <<"2- Register in Course\n"
-        <<"3- List My Courses\n"
-        <<"4- Solve Assignment\n"
-        <<"5- Assignment Report\n"
-        <<"6- Add Friend\n"
-        <<"7- List my Friends\n"
-        <<"8- Get Notifications\n"
-        <<"9- Log out\n";
-        int choice = validateChoice(1,9,"Enter the Choice: ");
+        std::cout<<"\n1. View Profile\n"
+        <<"2. Enroll in Course\n"
+        <<"3. My Courses\n"
+        <<"4. Solve Assignments\n"
+        <<"5. View Assignment Report\n"
+        <<"6. Add a Friend\n"
+        <<"7. Friends List\n"
+        <<"8. Notifications\n"
+        <<"9. Log Out\n";
+        int choice = validateChoice(1,9,"Please enter your choice: ");
         std::cout<<std::endl;
         if (choice == 1) {
             // My Profile
