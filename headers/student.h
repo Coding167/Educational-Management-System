@@ -21,12 +21,10 @@ public:
     void setID(std::string id);
 
     std::vector<Student*> getFriends();
-    std::vector<Student*> getNotificatoins();
     std::vector<Course*> getCourses();
     std::vector<Course*> getUnregisteredCourses();
     void addRegisterCourse(std::string courseID);
     std::vector<Student*> getNotFriends();
-    void addNotification(std::string stuID);
     void addFriend(std::string friendId);
 };
 
@@ -35,13 +33,15 @@ void studentStart(std::string personID);
 class Notification {
     private:
         Student* from;
-        Student* to;
+        std::vector<std::string> stu1notificationsIDs;
 
     public:
         Notification() {}
-        Notification(Student* from, Student* to): from(from), to(to) {}
+        Notification(Student* from) {}
 
-        std::vector<Student*> getNotifiedStudents();
-        void send();
+        void setStudents(Student* from);
+
+        std::vector<Student*> getNotificatoins();
+        void send(Student* to);
 };
 #endif // STUDENTS_H_INCLUDED

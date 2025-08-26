@@ -24,6 +24,7 @@ void Student::setID(std::string id) {
 void studentStart(std::string personID) {
     // the student
     Student stu(personID);
+    Notification noti(&stu);
     // Welcome message
     std::cout<<"Welcome "<<stu.getName()<<std::endl;
 
@@ -58,7 +59,7 @@ void studentStart(std::string personID) {
             <<"Name: "<<stu.getName()<<std::endl
             <<"Username: "<<stu.getUsername()<<std::endl
             <<"You have "<<stu.getCourses().size()<<" Course(s)"<<std::endl
-            <<"You have "<<stu.getFriends().size()<<" Friend(s) and "<<stu.getNotificatoins().size()<<" Notification(s)\n";
+            <<"You have "<<stu.getFriends().size()<<" Friend(s) and "<<noti.getNotificatoins().size()<<" Notification(s)\n";
         }else if (choice == 2) {
             // Register in Course
             std::vector<Course*> courses = stu.getUnregisteredCourses();
@@ -162,7 +163,7 @@ void studentStart(std::string personID) {
             c = validateChoice(0,1,"Do you want to make this user your friend [1 -> yes , 0 -> no]: ");
             std::cout<<std::endl;
             if (c) {
-                currentFriend->addNotification(stu.getID());
+                noti.send(currentFriend);
             }
         } else if (choice == 7) {
             // List my Friends
@@ -185,7 +186,7 @@ void studentStart(std::string personID) {
                     <<"\nHe has "<<currentFriend->getFriends().size()<<" Friend(s)\n";
         } else if (choice == 8) {
             // Get Notifications
-            std::vector<Student*> notifications = stu.getNotificatoins();
+            std::vector<Student*> notifications = noti.getNotificatoins();
             if (notifications.size() == 0) {
                 std::cout<<"You haven't Notifications.\n";
                 continue;
@@ -223,20 +224,6 @@ std::vector<Student*> Student::getFriends() {
     }
     std::vector<Student*> studs;
     for (std::string s: this->friendsIDs) {
-        Student* stud = new Student(s);
-        studs.push_back(stud);
-    }
-    return studs;
-}
-std::vector<Student*> Student::getNotificatoins() {
-    if (notificationsIDs.empty()) return {};
-    if (notificationsIDs.size() == 1) {
-        if (notificationsIDs.at(0).empty()) {
-            return {};
-        }
-    }
-    std::vector<Student*> studs;
-    for (std::string s: this->notificationsIDs) {
         Student* stud = new Student(s);
         studs.push_back(stud);
     }
@@ -308,13 +295,6 @@ std::vector<Student*> Student::getNotFriends() {
     return notFriends;
 }
 
-void Student::addNotification(std::string stuID) {
-    File file(this->filePath);
-    this->notificationsIDs.push_back(stuID);
-    std::string line = (this->userPrefix + std::to_string(this->id)) + StudentConstants().FIELDS_SEPARATOR + this->name + StudentConstants().FIELDS_SEPARATOR + this->username + StudentConstants().FIELDS_SEPARATOR + this->password + StudentConstants().FIELDS_SEPARATOR + this->email + StudentConstants().FIELDS_SEPARATOR + join(this->coursesIDs,StudentConstants().COURSE_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->friendsIDs,StudentConstants().FRIENDS_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->notificationsIDs,StudentConstants().NOTIFICATIONS_SEPARATOR);
-    file.replaceLine(this->id,line);
-}
-
 void Student::addFriend(std::string friendId) {
     // students.erase(std::remove(students.begin(), students.end(), "b"), students.end());
     this->notificationsIDs.erase(
@@ -325,4 +305,37 @@ void Student::addFriend(std::string friendId) {
     File file(this->filePath);
     std::string line = (this->userPrefix + std::to_string(this->id)) + StudentConstants().FIELDS_SEPARATOR + this->name + StudentConstants().FIELDS_SEPARATOR + this->username + StudentConstants().FIELDS_SEPARATOR + this->password + StudentConstants().FIELDS_SEPARATOR + this->email + StudentConstants().FIELDS_SEPARATOR + join(this->coursesIDs,StudentConstants().COURSE_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->friendsIDs,StudentConstants().FRIENDS_IDS_SEPARATOR) + StudentConstants().FIELDS_SEPARATOR + join(this->notificationsIDs,StudentConstants().NOTIFICATIONS_SEPARATOR);
     file.replaceLine(this->id,line);
+}
+
+// Notifications
+Notification::Notification(Student* from) {
+    setStudents(from);
+}
+
+void Notification::setStudents(Student* from) {
+    this->from = from;
+    File file(StudentConstants().FILE_PATH);
+    std::string line1 = file.readLine(stringToInt(this->from->getID()));
+    this->stu1notificationsIDs = split(split(line1,StudentConstants().FIELDS_SEPARATOR).at(StudentConstants().NOTIFICATIONS),StudentConstants().NOTIFICATIONS_SEPARATOR);
+}
+
+std::vector<Student*> Notification::getNotificatoins() {
+    if (this->stu1notificationsIDs.empty()) return {};
+    std::vector<Student*> studs;
+    for (std::string id: this->stu1notificationsIDs) {
+        Student* stud = new Student(id);
+        studs.push_back(stud);
+    }
+    return studs;
+}
+
+void Notification::send(Student* to) {
+    File file(StudentConstants().FILE_PATH);
+    std::string line = file.readLine(stringToInt(to->getID()));
+    std::vector<std::string> parts = split(line,StudentConstants().FIELDS_SEPARATOR);
+    std::vector<std::string> NotificationsIDs = split(parts.at(StudentConstants().NOTIFICATIONS),StudentConstants().NOTIFICATIONS_SEPARATOR);
+    NotificationsIDs.push_back(this->from->getID());
+    parts.at(StudentConstants().NOTIFICATIONS) = join(NotificationsIDs,StudentConstants().NOTIFICATIONS_SEPARATOR);
+    line = join(parts,StudentConstants().FIELDS_SEPARATOR);
+    file.replaceLine(stringToInt(to->getID()),line);
 }
