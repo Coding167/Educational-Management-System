@@ -44,4 +44,21 @@ class Notification {
         std::vector<Student*> getNotificatoins();
         void send(Student* to);
 };
+
+class Friend {
+    private:
+        Student* stu;
+        std::vector<std::string> friends;
+
+    public:
+        Friend() {}
+        Friend(Student* stu);
+
+        void setStudent(Student* stu);
+
+        std::vector<Student*> getFriends();
+        std::vector<Student*> getNotFriends();
+
+        void addFriend(std::string friendId);
+};
 #endif // STUDENTS_H_INCLUDED
