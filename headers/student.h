@@ -37,7 +37,7 @@ class Notification {
 
     public:
         Notification() {}
-        Notification(Student* from) {}
+        Notification(Student* from);
 
         void setStudents(Student* from);
 
