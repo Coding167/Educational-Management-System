@@ -99,9 +99,7 @@ std::vector<std::string> split(std::string text, char character) {
 std::string join(std::vector<std::string> words, char character) {
     std::string result;
     for (std::string word : words) {
-        if (!word.empty()) {
-            result += word + character;
-        }
+        result += word + character;
     }
     if (!result.empty()) {
         result.pop_back();
