@@ -84,7 +84,7 @@ void studentStart(std::string personID) {
             std::vector<Course*> courses = stu.getCourses();
             if (courses.size() == 0) {
                 std::cout << "\nYou are not enrolled in any courses yet.\n";
-                std::cout << "Go to 'Register in Course' to join one!\n";
+                std::cout << "Go to 'Enroll in Course' to join one!\n";
                 continue;
             }
             std::cout << "\nYour Courses:\n";
@@ -103,24 +103,37 @@ void studentStart(std::string personID) {
         } else if (choice == 4) {
             // Solve Assignment
             std::vector<Course*> courses = stu.getCourses();
+            if (courses.empty()) {
+                std::cout << "\nYou are not enrolled in any courses yet.\n";
+                std::cout << "Go to 'Enroll in Course' to join one!\n";
+                continue;
+            }
+            std::cout << "\nYour Courses:\n";
             for (int i = 0 ; i < courses.size() ; i++) {
                 std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
             }
-            int c = validateChoice(1,courses.size(),"Enter The number of Course to View it: ");
+            std::cout<<std::endl;
+            int c = validateChoice(1,courses.size(),"Enter the number of the course to view: ");
             Course* currentCourse = courses.at(c-1);
             std::cout<<std::endl;
-            std::cout<<"Code: "<<currentCourse->getID()
-                    <<"\nName: "<<currentCourse->getName()
-                    <<"\nCreated by: "<<currentCourse->getDoctor()
-                    <<"\nHas "<<currentCourse->getAssignments().size()<<" Assignment(s) and "<<currentCourse->getStudetns().size()<<" Student(s)\n";
-            int a = validateChoice(0,1,"Do you want to Solve Assignments [1 -> yes , 0 -> no]: ");
+            std::cout<<"Course Code       : "<<currentCourse->getID()<<std::endl
+                     <<"Course Name       : "<<currentCourse->getName()<<std::endl
+                     <<"Created by        : Dr. "<<currentCourse->getDoctor()<<std::endl
+                     <<"Assignments       : [ "<<currentCourse->getAssignments().size()<<" ] Assignment(s)\n"
+                     <<"Enrolled Students : [ "<<currentCourse->getStudetns().size()<<" ] Student(s)\n";
+            int a = validateChoice(0,1,"Do you want to solve the assignments? [1 = Yes, 0 = No]: ");
             if (a) {
                 std::vector<Assignment*> assignments = stu.getCourses().at(c-1)->getAssignments();
+                if (assignments.empty()) {
+                    std::cout << "\nNo assignments available for this course yet.\n";
+                    continue;
+                }
+                std::cout << "\nStarting Assignments...\n";
                 for (int i = 0 ; i < assignments.size() ; i++) {
                     std::cout<<"[ "<<i+1<<" ] "<<assignments.at(i)->getQuestion()<<std::endl;
                     std::vector<std::string> answers = assignments.at(i)->getAnswers();
                     for (int j = 0 ; j < answers.size() ; j++) {
-                        std::cout<<j+1<<". "<<answers.at(j)<<std::endl;
+                        std::cout<<"  "<<j+1<<". "<<answers.at(j)<<std::endl;
                     }
                     int s = validateChoice(1,answers.size(),"Enter the number of answer: ");
                     if (answers.at(s-1) == assignments.at(i)->getCorrectAnswer()) {
@@ -128,14 +141,15 @@ void studentStart(std::string personID) {
                         std::cout<<"Correct!\n";
                     }else {
                         assignments.at(i)->addStudent(stu.getID(),false);
-                        std::cout<<"Wrong!\n";
+                        std::cout<<"Wrong!  Correct answer was: "
+                                << assignments.at(i)->getCorrectAnswer() << "\n";
                     }
                 }
                 int count = 0;
                 for (Assignment* a: assignments) {
                     count += a->isSolved(personID);
                 }
-                std::cout<<"You Solve "<<count<<" Out of "<<assignments.size()<<std::endl;
+                std::cout<<"Results: You solved "<<count<<" Out of "<<assignments.size()<<" correctly."<<std::endl;
             }
         } else if (choice == 5) {
             // Assignment Report
