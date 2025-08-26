@@ -224,25 +224,27 @@ void studentStart(std::string personID) {
             // Get Notifications
             std::vector<Student*> notifications = noti.getNotificatoins();
             if (notifications.size() == 0) {
-                std::cout<<"You haven't Notifications.\n";
+                std::cout<<"You don't have any new notifications.\n";
                 continue;
             }
+            std::cout << "\nYou have [ " << notifications.size() << " ] new notification(s):\n";
             for (int i = 0 ; i < notifications.size() ; i++) {
                 std::cout<<i+1<<". "<<notifications.at(i)->getName()<<std::endl;
             }
-            int c = validateChoice(1,notifications.size(),"Enter your friend number: ");
+            int c = validateChoice(1,notifications.size(),"Enter the number to view details: ");
             std::cout<<std::endl;
             Student* currentNotification = notifications.at(c-1);
             Friend currentFri(currentNotification);
-            std::cout<<"ID: "<<currentNotification->getID()
-                    <<"\nName: "<<currentNotification->getName()
-                    <<"\nUsername: "<<currentNotification->getUsername()
-                    <<"\nHe Register in "<<currentNotification->getCourses().size()<<" Course(s)"
-                    <<"\nHe has "<<currentFri.getFriends().size()<<" Friend(s)\n";
-            c = validateChoice(0,1,"Do you want to make this user your friend [1 -> yes , 0 -> no]: ");
+            std::cout<<"ID       : "<<currentNotification->getID()<<std::endl
+                     <<"Name     : "<<currentNotification->getName()<<std::endl
+                     <<"Username : "<<currentNotification->getUsername()<<std::endl
+                     <<"Courses  : [ "<<currentNotification->getCourses().size()<<" ] Course(s)"<<std::endl
+                     <<"Friends  : [ "<<currentFri.getFriends().size()<<" ] Friend(s)\n";
+            c = validateChoice(0,1,"Do you want to accept this friend request? [1 -> Yes | 0 -> No]: ");
             if (c) {
                 fri.addFriend(currentNotification);
                 currentFri.addFriend(&stu);
+                std::cout << "You are now friends with " << currentNotification->getName() << "!\n";
             }
         }else {
             // Log out
