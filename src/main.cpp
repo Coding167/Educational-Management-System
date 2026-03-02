@@ -47,3 +47,6 @@ int main() {
     
     return 0;
 }
+
+// Running the program
+// g++ assignment.cpp course.cpp DB.cpp doctor.cpp functions.cpp main.cpp student.cpp user.cpp -o main.exe -lodbc32
