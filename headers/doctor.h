@@ -22,6 +22,8 @@ class Doctor: public User {
         void showCourseDetails(int courseId);
 
         void addCourse(std::string name);
+
+        void addAssignment();
 };
 
 void doctorStart(std::string personID);

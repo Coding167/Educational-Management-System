@@ -161,6 +161,84 @@ void Doctor::addCourse(std::string name) {
   }
 }
 
+void Doctor::addAssignment() {
+  Database db;
+  if (!db.connect(connectionString)) return;
+
+  SQLHSTMT stmt = db.executeQueryHandle(
+    "SELECT id, name FROM Course WHERE doctor_id = " + std::to_string(this->id) + ";"
+  );
+
+  if (stmt == NULL) {
+    std::cout << "Failed to retrieve courses.\n";
+    return;
+  }
+
+  std::vector<int> courseIDs;
+  std::vector<std::string> courseNames;
+
+  while (SQLFetch(stmt) == SQL_SUCCESS) {
+    int id;
+    char name[100];
+
+    SQLGetData(stmt, 1, SQL_C_SLONG, &id, 0, NULL);
+    SQLGetData(stmt, 2, SQL_C_CHAR, name, sizeof(name), NULL);
+
+    courseIDs.push_back(id);
+    courseNames.push_back(name);
+  }
+
+  SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+
+  if (courseIDs.empty()) {
+    std::cout << "You have no courses.\n";
+    return;
+  }
+
+  std::cout << "\nChoose a Course:\n";
+  for (int i = 0; i < courseIDs.size(); i++) {
+    std::cout << i + 1 << ". "
+              << courseNames[i]
+              << " - "
+              << courseIDs[i] << "\n";
+  }
+
+  int choice = validateChoice(1, courseIDs.size(), "Your choice: ");
+  int selectedCourseId = courseIDs[choice - 1];
+
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+  std::string question;
+  std::cout << "\nEnter the question: ";
+  std::getline(std::cin, question);
+
+  std::string answers[4];
+
+  for (int i = 0; i < 4; i++) {
+    std::cout << "Answer " << i + 1 << ": ";
+    std::getline(std::cin, answers[i]);
+  }
+
+  int correct = validateChoice(1, 4, "Enter correct answer number (1-4): ");
+
+  std::string query =
+      "INSERT INTO Assignment "
+      "(question, answer1, answer2, answer3, answer4, correct_answer, course_id) VALUES ('"
+      + question + "', '"
+      + answers[0] + "', '"
+      + answers[1] + "', '"
+      + answers[2] + "', '"
+      + answers[3] + "', "
+      + std::to_string(correct) + ", "
+      + std::to_string(selectedCourseId) + ");";
+
+  if (db.executeNonQuery(query)) {
+    std::cout << "\nAssignment added successfully.\n";
+  } else {
+    std::cout << "\nFailed to add assignment.\n";
+  }
+}
+
 void doctorStart(std::string personID) {
   // the doctor
   Doctor doc(personID);
@@ -185,42 +263,7 @@ void doctorStart(std::string personID) {
       std::getline(std::cin,name);
       doc.addCourse(name);
     } else if (choice == 3) {
-      // Add Assignment
-      std::vector<Course*> courses = doc.getCourses();
-      if (courses.empty()) {
-        std::cout << "You have no courses.\n";
-        continue;
-      }
-      // Show the courses
-      for (int i = 0; i < courses.size(); ++i) {
-        std::cout << i + 1 << ". " << courses[i]->getName() << " - " << courses[i]->getID() << std::endl;
-      }
-      // Select a course
-      int c = validateChoice(1, courses.size(), "Enter the number of Course to view it: ");
-      Course* currentCourse = courses[c - 1];
-
-      std::string question;
-      std::vector<std::string> answers;
-      int n;
-
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-      std::cout << "Enter the question: ";
-      std::getline(std::cin, question);
-
-      n = validateChoice(1, 6, "Enter the number of answers: ");
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-      for (int i = 0; i < n; ++i) {
-        std::string answer;
-        std::cout << i + 1 << ". ";
-        std::getline(std::cin, answer);
-        answers.push_back(answer);
-      }
-
-      int correctAnswer = validateChoice(1, n, "Enter the number of correct answer: ");
-      correctAnswer--;
-
-      Assignment::addAssignment(question, answers, correctAnswer, currentCourse->getID());
+      doc.addAssignment();
     }else if (choice == 4) {
       // List Courses
       doc.viewCourses();
