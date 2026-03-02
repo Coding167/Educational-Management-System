@@ -15,7 +15,13 @@ class Doctor: public User {
 
         void setID(std::string id);
 
-        void addCourse(std::string courseID);
+        void viewProfile();
+
+        void viewCourses();
+
+        void showCourseDetails(int courseId);
+
+        void addCourse(std::string name);
 };
 
 void doctorStart(std::string personID);
