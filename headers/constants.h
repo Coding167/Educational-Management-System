@@ -78,5 +78,9 @@ struct courseConstants {
     const char ASSIGNMENTS_IDS_SEPARATOR = '/';
 };
 
+std::string connectionString = "Driver={ODBC Driver 17 for SQL Server};"
+                               "Server=localhost;"
+                               "Database=Educational-Management-System;"
+                               "Trusted_Connection=yes;";
 
 #endif // CONSTANTS_H_INCLUDED
