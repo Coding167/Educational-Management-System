@@ -19,6 +19,7 @@ public:
     Student(std::string id) { setID(id); }
 
     void setID(std::string id);
+    void viewProfile();
 
     std::vector<Course*> getCourses();
     std::vector<Course*> getUnregisteredCourses();

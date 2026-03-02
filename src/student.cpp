@@ -2,23 +2,84 @@
 #include "../headers/functions.h"
 #include "../headers/course.h"
 #include "../headers/assignment.h"
+#include "../headers/DB.h"
 #include <algorithm>
 
-void Student::setID(std::string id) {
-    this->id = stringToInt(id);
-    this->userPrefix = StudentConstants().PREFIX;
-    this->filePath = StudentConstants().FILE_PATH;
-    File file(this->filePath);
-    std::string line = file.readLine(this->id);
-    std::vector<std::string> parts = split(line,StudentConstants().FIELDS_SEPARATOR);
+void Student::setID(std::string idStr) {
+  this->id = stringToInt(idStr);
 
-    this->name = parts.at(StudentConstants().NAME);
-    this->username = parts.at(StudentConstants().USERNAME);
-    this->password = parts.at(StudentConstants().PASSWORD);
-    this->email = parts.at(StudentConstants().EMAIL);
-    this->coursesIDs = split(parts.at(StudentConstants().COURSE_IDS),StudentConstants().COURSE_IDS_SEPARATOR);
-    this->friendsIDs = split(parts.at(StudentConstants().FRIENDS_IDS),StudentConstants().FRIENDS_IDS_SEPARATOR);
-    this->notificationsIDs = split(parts.at(StudentConstants().NOTIFICATIONS),StudentConstants().NOTIFICATIONS_SEPARATOR);
+  Database db;
+  if (!db.connect(connectionString)) return;
+
+  SQLHSTMT stmt = db.executeQueryHandle(
+    "SELECT id, name, username "
+    "FROM Student "
+    "WHERE id = " + idStr + ";"
+  );
+
+  if (stmt != NULL && SQLFetch(stmt) == SQL_SUCCESS) {
+    // Get ID
+    int id1;
+    SQLGetData(stmt, 1, SQL_C_SLONG, &id1, 0, NULL);
+    this->id = id1;
+
+    // Get name and username
+    char name1[100], username1[100];
+    SQLGetData(stmt, 2, SQL_C_CHAR, name1, sizeof(name1), NULL);
+    SQLGetData(stmt, 3, SQL_C_CHAR, username1, sizeof(username1), NULL);
+
+    this->name = name1;
+    this->username = username1;
+
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+  } else {
+    std::cout << "Failed to retrieve student data.\n";
+  }
+}
+
+void Student::viewProfile() {
+
+    Database db;
+    if (!db.connect(connectionString)) return;
+
+    SQLHSTMT stmt = db.executeQueryHandle(
+        "SELECT s.id, s.name, s.username, "
+        "(SELECT COUNT(*) FROM Student_Course sc WHERE sc.student_id = s.id), "
+        "(SELECT COUNT(*) FROM Friend fr WHERE (fr.student_id = s.id OR fr.friend_id = s.id)), "
+        "(SELECT COUNT(*) FROM Notification n WHERE n.[to] = s.id) "
+        "FROM Student s "
+        "WHERE s.id = " + std::to_string(this->id) + ";"
+    );
+
+    if (stmt != NULL && SQLFetch(stmt) == SQL_SUCCESS) {
+
+        int id;
+        char name[100];
+        char username[100];
+        int coursesCount;
+        int friendsCount;
+        int notificationsCount;
+
+        SQLGetData(stmt, 1, SQL_C_SLONG, &id, 0, NULL);
+        SQLGetData(stmt, 2, SQL_C_CHAR, name, sizeof(name), NULL);
+        SQLGetData(stmt, 3, SQL_C_CHAR, username, sizeof(username), NULL);
+        SQLGetData(stmt, 4, SQL_C_SLONG, &coursesCount, 0, NULL);
+        SQLGetData(stmt, 5, SQL_C_SLONG, &friendsCount, 0, NULL);
+        SQLGetData(stmt, 6, SQL_C_SLONG, &notificationsCount, 0, NULL);
+
+        std::cout << "Student Profile:\n";
+        std::cout << "ID: " << id << "\n";
+        std::cout << "Name: " << name << "\n";
+        std::cout << "Username: " << username << "\n";
+        std::cout << "Courses: " << coursesCount << "\n";
+        std::cout << "Friends: " << friendsCount << "\n";
+        std::cout << "Notifications: " << notificationsCount << "\n";
+    }
+    else {
+        std::cout << "Failed to retrieve profile.\n";
+    }
+
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 }
 
 void studentStart(std::string personID) {
@@ -26,8 +87,6 @@ void studentStart(std::string personID) {
     Student stu(personID);
     Notification noti(&stu);
     Friend fri(&stu);
-    // Welcome message
-    std::cout<<"Welcome "<<stu.getName()<<std::endl;
 
     while (true) {
         // menu
@@ -44,15 +103,7 @@ void studentStart(std::string personID) {
         std::cout<<std::endl;
         if (choice == 1) {
             // My Profile
-            std::cout<<"ID            : "<<stu.getID()<<std::endl
-                     <<"Name          : "<<stu.getName()<<std::endl
-                     <<"Username      : "<<stu.getUsername()<<std::endl
-                     <<"Courses       : You are enrolled in [ "
-                     <<stu.getCourses().size()<<" ] Course(s)\n"
-                     <<"Friends       : You have [ "
-                     <<fri.getFriends().size()<<" ] Friend(s)\n"
-                     <<"Notifications : [ "
-                     <<noti.getNotificatoins().size()<<" ] Notification(s)\n";
+            stu.viewProfile();
         }else if (choice == 2) {
             // Register in Course
             std::vector<Course*> courses = stu.getUnregisteredCourses();
