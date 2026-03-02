@@ -8,13 +8,12 @@ std::vector<std::string> split(std::string text, char character);
 std::string join(std::vector<std::string> words, char character);
 int stringToInt(std::string number);
 int validateChoice(int startNum, int endNum, std::string msg);
-std::string userId(std::string username, std::string password, std::string path);
 bool isValidPassword(std::string password);
 std::string getPassword();
 bool isValidEmail(std::string email);
-bool usernameExistsInFile(std::string filename, std::string username);
 bool isUsernameTaken(std::string username);
 std::string getUniqueUsername();
+int addPerson(std::string name, std::string username, std::string password, std::string email, std::string role);
 
 void welcome();
 void signUp();

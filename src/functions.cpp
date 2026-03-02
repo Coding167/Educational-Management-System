@@ -128,113 +128,114 @@ int stringToInt(std::string number) {
 
 
 int validateChoice(int startNum, int endNum, std::string msg) {
-    int choice;
+  int choice;
 
-    while (true) {
-        std::cout<<msg;
-        std::cin >> choice;
+  while (true) {
+    std::cout<<msg;
+    std::cin >> choice;
 
-        if (std::cin.fail()) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Invalid input. Please enter a number.\n";
-        }
-        else if (choice < startNum || choice > endNum) {
-            std::cout << "Out of range. Please choice between " << startNum << " and " << endNum << std::endl;
-        }
-        else {
-            break;
-        }
+    if (std::cin.fail()) {
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cout << "Invalid input. Please enter a number.\n";
     }
-
-    return choice;
-}
-
-std::string userId(std::string username, std::string password, std::string path) {
-    std::ifstream file(path);
-    std::string line;
-    while (getline(file,line)) {
-        std::vector<std::string> parts = split(line,',');
-        if (parts.at(2) == username && parts.at(3) == password) {
-            file.close();
-            return parts.at(0);
-        }
+    else if (choice < startNum || choice > endNum) {
+      std::cout << "Out of range. Please choice between " << startNum << " and " << endNum << std::endl;
     }
-    file.close();
-    return "none";
+    else {
+      break;
+    }
+  }
+
+  return choice;
 }
 
 bool isValidPassword(std::string password) {
-    if (password.length() < 8) return false;
+  if (password.length() < 8) return false;
 
-    bool hasUpper = false;
-    bool hasLower = false;
-    bool hasDigit = false;
+  bool hasUpper = false;
+  bool hasLower = false;
+  bool hasDigit = false;
 
-    for (char ch : password) {
-        if (isupper(ch)) hasUpper = true;
-        else if (islower(ch)) hasLower = true;
-        else if (isdigit(ch)) hasDigit = true;
-    }
+  for (char ch : password) {
+    if (isupper(ch)) hasUpper = true;
+    else if (islower(ch)) hasLower = true;
+    else if (isdigit(ch)) hasDigit = true;
+  }
 
-    return hasUpper && hasLower && hasDigit;
+  return hasUpper && hasLower && hasDigit;
 }
 
 std::string getPassword() {
-    std::string password;
-    do {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-        std::cout << "Enter a strong password (at least 8 chars, upper, lower, digit): ";
-        std::cin >> password;
+  std::string password;
+  do {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    std::cout << "Enter a strong password (at least 8 chars, upper, lower, digit): ";
+    std::cin >> password;
 
-        if (!isValidPassword(password)) {
-            std::cout << "Invalid password. Try again.\n";
-        }
+    if (!isValidPassword(password)) {
+      std::cout << "Invalid password. Try again.\n";
+    }
 
-    } while (!isValidPassword(password));
-    return password;
+  } while (!isValidPassword(password));
+  return password;
 }
 
 bool isValidEmail(std::string email) {
-    std::regex pattern(R"(\w+@\w+\.\w+)");
-    return std::regex_match(email, pattern);
-}
-
-bool usernameExistsInFile(std::string filename, std::string username) {
-    std::ifstream file(filename);
-    std::string line;
-
-    while (getline(file, line)) {
-        std::vector<std::string> fields = split(line, ',');
-        if (fields[2] == username) {
-            return true;
-        }
-    }
-    return false;
+  std::regex pattern(R"(\w+@\w+\.\w+)");
+  return std::regex_match(email, pattern);
 }
 
 bool isUsernameTaken(std::string username) {
-    return usernameExistsInFile(DoctorConstants().FILE_PATH, username) ||
-           usernameExistsInFile(StudentConstants().FILE_PATH, username);
+  Database db;
+  if (!db.connect(connectionString)) {
+      return true;
+  }
+
+  SQLHSTMT stmt = db.executeQueryHandle(
+    "SELECT username, email "
+    "FROM Student "
+    "WHERE username = '" + username + "' "
+    "UNION "
+    "SELECT username, email "
+    "FROM Doctor "
+    "WHERE username = '" + username + "';"
+  );
+
+  if (stmt != NULL) {
+    char Username[100];
+    while (SQLFetch(stmt) == SQL_SUCCESS) {
+      SQLGetData(stmt, 1, SQL_C_CHAR, Username, sizeof(Username), NULL);
+      if (std::string(Username) == username) {
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+        return true; // Found
+      }
+    }
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    return false; // Not found
+  } else {
+    std::cout << "Database query failed!\n";
+    return true; // DB fails
+  }
 }
 
 std::string getUniqueUsername() {
-    std::string username;
+  std::string username;
 
-    while (true) {
-        std::cout << "Enter a username: ";
-        std::cin >> username;
+  while (true) {
+    std::cout << "Enter a username: ";
+    std::cin >> username;
 
-        if (isUsernameTaken(username)) {
-            std::cout << "That username already exists. Try another one.\n";
-        } else {
-            std::cout << "Username is available!\n";
-            break;
-        }
+    if (isUsernameTaken(username)) {
+      std::cout << "That username already exists. Try another one.\n";
+    } else {
+      std::cout << "Username is available!\n";
+      break;
     }
+  }
 
-    return username;
+  return username;
 }
 
 
@@ -306,40 +307,62 @@ void login() {
   }
 }
 
-void signUp() {
-    std::string fname, lname, password, email, username;
-    int sOrD;
-    std::cout<<"Enter you first name: ";
-    std::cin>>fname;
-    std::cout<<"Enter you last name: ";
-    std::cin>>lname;
-    username = getUniqueUsername();
-    password = getPassword();
-    do {
-        std::cout << "Enter your email: ";
-        std::cin >> email;
-        if (!isValidEmail(email)) {
-            std::cout << "Invalid email format. Try again.\n";
-        }
-    } while (!isValidEmail(email));
-    std::cout<<"1. Student\n2. Doctor\n";
-    sOrD = validateChoice(1,2,"Who are you? ");
-    std::string filename = (sOrD == 1 ? StudentConstants().FILE_PATH : DoctorConstants().FILE_PATH);
-    char userPrefix = (sOrD == 1 ? StudentConstants().PREFIX[0] : DoctorConstants().PREFIX[0]);
-    char fieldsSeparator = (sOrD == 1 ? StudentConstants().FIELDS_SEPARATOR : DoctorConstants().FIELDS_SEPARATOR);
+int addPerson(std::string name, std::string username, std::string password, std::string email, std::string role) {
+  Database db;
+  if (!db.connect(connectionString)) {
+    return -1;
+  }
 
-    File infoFile(InfoConstants().FILE_PATH);
-    std::vector<std::string> parts = split(infoFile.readLine(1),InfoConstants().FIELDS_SEPARATOR);
-    int id = stringToInt(parts.at(sOrD));
-    id++;
-    parts.at(sOrD) = userPrefix + std::to_string(id);
-    infoFile.replaceLine(1,join(parts,InfoConstants().FIELDS_SEPARATOR));
-    File file(filename);
-    std::string line = userPrefix + std::to_string(id) + fieldsSeparator + fname + ' ' + lname + fieldsSeparator + username + fieldsSeparator + password + fieldsSeparator + email + (userPrefix == StudentConstants().PREFIX[0] ?  ",,,":",");
-    file.addLine(line);
-    if (userPrefix == StudentConstants().PREFIX[0]) {
-        studentStart(userPrefix + std::to_string(id));
-    }else {
-        doctorStart(userPrefix + std::to_string(id));
+  std::string table = (role == "student") ? "Student" : "Doctor";
+  std::string query = "INSERT INTO " + table + " (name, username, password, email) VALUES ('" + name + "', '" + username + "', '" + password + "', '" + email + "');";
+
+  if (db.executeNonQuery(query)) {
+    std::cout << "Registration successful!\n";
+    SQLHSTMT stmt = db.executeQueryHandle(
+      "SELECT id "
+      "FROM " + table + " "
+      "WHERE username = '" + username + "';"
+    );
+    if (stmt != NULL) {
+      int id;
+      while (SQLFetch(stmt) == SQL_SUCCESS) {
+        SQLGetData(stmt, 1, SQL_C_LONG, &id, 0, NULL);
+        std::cout << "Your ID is: " << id << std::endl;
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+        return id;
+      }
+      SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    } else {
+      std::cout << "Failed to retrieve user ID.\n";
     }
+  } else {
+    std::cout << "Failed to register. Please try again.\n";
+    welcome();
+  }
+  return -1; // Registration failed
+}
+
+void signUp() {
+  std::string fname, lname, password, email, username;
+  std::cout<<"Enter you first name: ";
+  std::cin>>fname;
+  std::cout<<"Enter you last name: ";
+  std::cin>>lname;
+  username = getUniqueUsername();
+  password = getPassword();
+  do {
+    std::cout << "Enter your email: ";
+    std::cin >> email;
+    if (!isValidEmail(email)) {
+      std::cout << "Invalid email format. Try again.\n";
+    }
+  } while (!isValidEmail(email));
+  std::cout<<"1. Student\n2. Doctor\n";
+  int sOrD = validateChoice(1,2,"Who are you? ");
+  int id = addPerson(fname + " " + lname, username, password, email, (sOrD == 1) ? "student" : "doctor");
+  if (sOrD == 1) {
+    studentStart(std::to_string(id));
+  } else {
+    doctorStart(std::to_string(id));
+  }
 }
