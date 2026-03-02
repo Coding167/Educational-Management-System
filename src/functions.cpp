@@ -2,6 +2,7 @@
 #include "../headers/student.h"
 #include "../headers/doctor.h"
 #include "../headers/constants.h"
+#include "../headers/DB.h"
 #include <limits>
 #include <fstream>
 #include <regex>
@@ -258,27 +259,51 @@ void welcome() {
 }
 
 void login() {
-    std::string username, password;
-    std::cout<<"Enter Username: ";
-    std::cin>>username;
-    std::cout<<"Enter Password: ";
-    std::cin>>password;
-    
-    std::string personID = userId(username,password,DoctorConstants().FILE_PATH);
-    if (personID == "none") {
-        personID = userId(username,password,StudentConstants().FILE_PATH);
-        if (personID[0] == StudentConstants().PREFIX[0]) {
-            studentStart(personID);
-        }else {
-            std::cout<<"You are not exist.\n";
-            welcome();
-        }
-    } else if (personID[0] == DoctorConstants().PREFIX[0]) {
-        doctorStart(personID);
+  std::string username, password;
+  std::cout<<"Enter Username: ";
+  std::cin>>username;
+  std::cout<<"Enter Password: ";
+  std::cin>>password;
+  
+  Database db;
+  if (!db.connect(connectionString)) {
+    return;
+  }
+  SQLHSTMT stmt = db.executeQueryHandle(
+    "SELECT id, name, 'student' AS role "
+    "FROM Student "
+    "WHERE username = '" + username + "' "
+    "AND password = '" + password + "' "
+    "UNION "
+    "SELECT id, name, 'doctor' AS role "
+    "FROM Doctor "
+    "WHERE username = '" + username + "' "
+    "AND password = '" + password + "';"
+  );
+
+  if (stmt != NULL) {
+    int id;
+    char name[100];
+    char role[20];
+    if (SQLFetch(stmt) == SQL_SUCCESS) {
+      SQLGetData(stmt, 1, SQL_C_SLONG, &id, 0, NULL);
+      SQLGetData(stmt, 2, SQL_C_CHAR, name, sizeof(name), NULL);
+      SQLGetData(stmt, 3, SQL_C_CHAR, role, sizeof(role), NULL);
+      if (std::string(role) == "student") {
+        std::cout<<"Welcome, "<<name<<"!\n";
+        studentStart(std::to_string(id));
+      } else if (std::string(role) == "doctor") {
+        std::cout<<"Welcome, Dr. "<<name<<"!\n";
+        doctorStart(std::to_string(id));
+      }
     }else {
-        std::cout<<"You are not exist.\n";
+        std::cout << "Invalid username or password.\n";
         welcome();
     }
+  }else {
+    std::cout << "Database query failed!\n";
+    welcome();
+  }
 }
 
 void signUp() {

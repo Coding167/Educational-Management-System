@@ -18,7 +18,7 @@ bool Database::connect(const std::string& connectionString) {
   );
 
   if (SQL_SUCCEEDED(ret)) {
-    std::cout << "Connected successfully!\n";
+    // std::cout << "Connected successfully!\n";
     return true;
   }
   else {
