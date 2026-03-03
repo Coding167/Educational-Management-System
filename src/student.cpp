@@ -449,6 +449,138 @@ void Student::viewAssignmentReport() {
     SQLFreeHandle(SQL_HANDLE_STMT, stmt2);
 }
 
+void Student::solveAssignment() {
+    Database db;
+    if (!db.connect(connectionString)) return;
+
+    while (true) {
+        // Get courses student is in that have assignments
+        SQLHSTMT stmt = db.executeQueryHandle(
+            "SELECT c.id, c.name, COUNT(a.id) AS total_assignments "
+            "FROM Course c "
+            "JOIN Student_Course sc ON sc.course_id = c.id "
+            "JOIN Assignment a ON a.course_id = c.id "
+            "WHERE sc.student_id = " + std::to_string(this->id) + " "
+            "GROUP BY c.id, c.name;"
+        );
+
+        if (!stmt) {
+            std::cout << "Failed to retrieve courses.\n";
+            return;
+        }
+
+        std::vector<int> courseIDs;
+        std::vector<std::string> courseNames;
+        std::vector<int> courseAssignments;
+
+        while (SQLFetch(stmt) == SQL_SUCCESS) {
+            int id, totalAssignments;
+            char name[100];
+
+            SQLGetData(stmt, 1, SQL_C_SLONG, &id, 0, NULL);
+            SQLGetData(stmt, 2, SQL_C_CHAR, name, sizeof(name), NULL);
+            SQLGetData(stmt, 3, SQL_C_SLONG, &totalAssignments, 0, NULL);
+
+            courseIDs.push_back(id);
+            courseNames.push_back(name);
+            courseAssignments.push_back(totalAssignments);
+        }
+
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+
+        if (courseIDs.empty()) {
+            std::cout << "No courses with assignments found.\n";
+            return;
+        }
+
+        // Show courses
+        std::cout << "\nCourses with Assignments:\n";
+        for (size_t i = 0; i < courseIDs.size(); i++) {
+            std::cout << i + 1 << ". " << courseNames[i] << " - have " << courseAssignments[i] << " assignments\n";
+        }
+        std::cout << courseIDs.size() + 1 << ". Exit\n";
+
+        int choice = validateChoice(1, courseIDs.size() + 1, "Choose a course: ");
+        if (choice == courseIDs.size() + 1) break;
+
+        int selectedCourse = courseIDs[choice - 1];
+
+        // Get unsolved assignments with correct answer
+        SQLHSTMT stmt2 = db.executeQueryHandle(
+            "SELECT a.id, a.question, a.answer1, a.answer2, a.answer3, a.answer4, a.correct_answer "
+            "FROM Assignment a "
+            "LEFT JOIN Student_Assignment sa ON sa.assignment_id = a.id AND sa.student_id = " + std::to_string(this->id) + " "
+            "WHERE a.course_id = " + std::to_string(selectedCourse) + " AND (sa.status IS NULL OR sa.status = '');"
+        );
+
+        if (!stmt2) {
+            std::cout << "Failed to retrieve assignments.\n";
+            continue;
+        }
+
+        std::vector<int> unsolvedIDs;
+        std::vector<std::string> questions;
+        std::vector<std::vector<std::string>> answers;
+        std::vector<int> correctAnswers;
+
+        while (SQLFetch(stmt2) == SQL_SUCCESS) {
+            int id, correct;
+            char question[256], ans1[100], ans2[100], ans3[100], ans4[100];
+
+            SQLGetData(stmt2, 1, SQL_C_SLONG, &id, 0, NULL);
+            SQLGetData(stmt2, 2, SQL_C_CHAR, question, sizeof(question), NULL);
+            SQLGetData(stmt2, 3, SQL_C_CHAR, ans1, sizeof(ans1), NULL);
+            SQLGetData(stmt2, 4, SQL_C_CHAR, ans2, sizeof(ans2), NULL);
+            SQLGetData(stmt2, 5, SQL_C_CHAR, ans3, sizeof(ans3), NULL);
+            SQLGetData(stmt2, 6, SQL_C_CHAR, ans4, sizeof(ans4), NULL);
+            SQLGetData(stmt2, 7, SQL_C_SLONG, &correct, 0, NULL); // 1-based index
+
+            unsolvedIDs.push_back(id);
+            questions.push_back(question);
+            answers.push_back({ans1, ans2, ans3, ans4});
+            correctAnswers.push_back(correct - 1); // convert to 0-based index
+        }
+
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt2);
+
+        if (unsolvedIDs.empty()) {
+            std::cout << "You have solved all assignments in this course.\n";
+            continue;
+        }
+
+        // Solve assignments one by one
+        for (size_t i = 0; i < unsolvedIDs.size(); i++) {
+            std::cout << "\nAssignment: " << questions[i] << "\n";
+            for (size_t j = 0; j < answers[i].size(); j++) {
+                std::cout << j + 1 << ". " << answers[i][j] << "\n";
+            }
+
+            int ans = validateChoice(1, 4, "Enter your answer number: ") - 1;
+
+            // Save answer in DB
+            std::string status = (ans == correctAnswers[i]) ? "Correct" : "Wrong";
+            db.executeNonQuery(
+                "INSERT INTO Student_Assignment (student_id, assignment_id, status) VALUES (" +
+                std::to_string(this->id) + ", " + std::to_string(unsolvedIDs[i]) + ", '" + status + "');"
+            );
+
+            // Show feedback
+            if (ans == correctAnswers[i]) {
+                std::cout << "Correct! Your answer is saved.\n";
+            } else {
+                std::cout << "Wrong! The correct answer is: "
+                          << correctAnswers[i] + 1 << ". " << answers[i][correctAnswers[i]] << "\n";
+            }
+
+            // Ask if want to continue
+            int cont;
+            std::cout << "Do you want to continue solving assignments? [yes=1 / no=0]: ";
+            std::cin >> cont;
+            if (cont != 1) break;
+        }
+    }
+}
+
 void studentStart(std::string personID) {
     // the student
     Student stu(personID);
@@ -479,55 +611,7 @@ void studentStart(std::string personID) {
             stu.viewCourses();
         } else if (choice == 4) {
             // Solve Assignment
-            std::vector<Course*> courses = stu.getCourses();
-            if (courses.empty()) {
-                std::cout << "\nYou are not enrolled in any courses yet.\n";
-                std::cout << "Go to 'Enroll in Course' to join one!\n";
-                continue;
-            }
-            std::cout << "\nYour Courses:\n";
-            for (int i = 0 ; i < courses.size() ; i++) {
-                std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
-            }
-            std::cout<<std::endl;
-            int c = validateChoice(1,courses.size(),"Enter the number of the course to view: ");
-            Course* currentCourse = courses.at(c-1);
-            std::cout<<std::endl;
-            std::cout<<"Course Code       : "<<currentCourse->getID()<<std::endl
-                     <<"Course Name       : "<<currentCourse->getName()<<std::endl
-                     <<"Created by        : Dr. "<<currentCourse->getDoctor()<<std::endl
-                     <<"Assignments       : [ "<<currentCourse->getAssignments().size()<<" ] Assignment(s)\n"
-                     <<"Enrolled Students : [ "<<currentCourse->getStudetns().size()<<" ] Student(s)\n";
-            int a = validateChoice(0,1,"Do you want to solve the assignments? [1 = Yes, 0 = No]: ");
-            if (a) {
-                std::vector<Assignment*> assignments = stu.getCourses().at(c-1)->getAssignments();
-                if (assignments.empty()) {
-                    std::cout << "\nNo assignments available for this course yet.\n";
-                    continue;
-                }
-                std::cout << "\nStarting Assignments...\n";
-                for (int i = 0 ; i < assignments.size() ; i++) {
-                    std::cout<<"[ "<<i+1<<" ] "<<assignments.at(i)->getQuestion()<<std::endl;
-                    std::vector<std::string> answers = assignments.at(i)->getAnswers();
-                    for (int j = 0 ; j < answers.size() ; j++) {
-                        std::cout<<"  "<<j+1<<". "<<answers.at(j)<<std::endl;
-                    }
-                    int s = validateChoice(1,answers.size(),"Enter the number of answer: ");
-                    if (answers.at(s-1) == assignments.at(i)->getCorrectAnswer()) {
-                        assignments.at(i)->addStudent(stu.getID(),true);
-                        std::cout<<"Correct!\n";
-                    }else {
-                        assignments.at(i)->addStudent(stu.getID(),false);
-                        std::cout<<"Wrong!  Correct answer was: "
-                                << assignments.at(i)->getCorrectAnswer() << "\n";
-                    }
-                }
-                int count = 0;
-                for (Assignment* a: assignments) {
-                    count += a->isSolved(personID);
-                }
-                std::cout<<"Results: You solved "<<count<<" Out of "<<assignments.size()<<" correctly."<<std::endl;
-            }
+            stu.solveAssignment();
         } else if (choice == 5) {
             // Assignment Report
             stu.viewAssignmentReport();

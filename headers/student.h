@@ -23,6 +23,7 @@ public:
     void viewCourses();
     void viewFriends();
     void viewAssignmentReport();
+    void solveAssignment();
 
     std::vector<Course*> getCourses();
     std::vector<Course*> getUnregisteredCourses();
