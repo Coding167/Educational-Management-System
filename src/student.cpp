@@ -169,6 +169,89 @@ void Student::viewCourses() {
     SQLFreeHandle(SQL_HANDLE_STMT, stmt2);
 }
 
+void Student::viewFriends() {
+
+    Database db;
+    if (!db.connect(connectionString)) return;
+
+    SQLHSTMT stmt = db.executeQueryHandle(
+        "SELECT s.id, s.name "
+        "FROM Student s "
+        "JOIN Friend f ON "
+        "(f.student_id = " + std::to_string(this->id) + " AND s.id = f.friend_id) "
+        "OR "
+        "(f.friend_id = " + std::to_string(this->id) + " AND s.id = f.student_id);"
+    );
+
+    if (stmt == NULL) {
+        std::cout << "Failed to retrieve friends.\n";
+        return;
+    }
+
+    std::vector<int> friendIDs;
+    std::vector<std::string> friendNames;
+
+    while (SQLFetch(stmt) == SQL_SUCCESS) {
+        int id;
+        char name[100];
+
+        SQLGetData(stmt, 1, SQL_C_SLONG, &id, 0, NULL);
+        SQLGetData(stmt, 2, SQL_C_CHAR, name, sizeof(name), NULL);
+
+        friendIDs.push_back(id);
+        friendNames.push_back(name);
+    }
+
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+
+    if (friendIDs.empty()) {
+        std::cout << "You have no friends yet.\n";
+        return;
+    }
+
+    std::cout << "\nYour Friends:\n";
+    for (int i = 0; i < friendIDs.size(); i++) {
+        std::cout << i + 1 << ". " << friendNames[i] << "\n";
+    }
+
+    int choice = validateChoice(1, friendIDs.size(), "Choose friend: ");
+    int selectedFriend = friendIDs[choice - 1];
+
+    // 🔥 Now show friend details
+    SQLHSTMT stmt2 = db.executeQueryHandle(
+        "SELECT s.id, s.name, s.username, "
+        "(SELECT COUNT(*) FROM Student_Course sc WHERE sc.student_id = s.id), "
+        "(SELECT COUNT(*) FROM Friend fr WHERE (fr.student_id = s.id OR fr.friend_id = s.id)) "
+        "FROM Student s "
+        "WHERE s.id = " + std::to_string(selectedFriend) + ";"
+    );
+
+    if (stmt2 != NULL && SQLFetch(stmt2) == SQL_SUCCESS) {
+
+        int id;
+        char name[100];
+        char username[100];
+        int coursesCount;
+        int friendsCount;
+
+        SQLGetData(stmt2, 1, SQL_C_SLONG, &id, 0, NULL);
+        SQLGetData(stmt2, 2, SQL_C_CHAR, name, sizeof(name), NULL);
+        SQLGetData(stmt2, 3, SQL_C_CHAR, username, sizeof(username), NULL);
+        SQLGetData(stmt2, 4, SQL_C_SLONG, &coursesCount, 0, NULL);
+        SQLGetData(stmt2, 5, SQL_C_SLONG, &friendsCount, 0, NULL);
+
+        std::cout << "\n--- Friend Profile ---\n";
+        std::cout << "ID: " << id << "\n";
+        std::cout << "Name: " << name << "\n";
+        std::cout << "Username: " << username << "\n";
+        std::cout << "Courses: " << coursesCount << "\n";
+        std::cout << "Friends: " << friendsCount << "\n";
+    } else {
+        std::cout << "Failed to retrieve friend details.\n";
+    }
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt2);
+}
+
 void studentStart(std::string personID) {
     // the student
     Student stu(personID);
@@ -322,24 +405,7 @@ void studentStart(std::string personID) {
             }
         } else if (choice == 7) {
             // List my Friends
-            std::vector<Student*> friends = fri.getFriends();
-            if (friends.size() == 0) {
-                std::cout<<"You don't have any friends yet.\n";
-                continue;
-            }
-            std::cout<<"You have "<<friends.size()<<" Friend(s):\n";
-            for (int i = 0 ; i < friends.size() ; i++) {
-                std::cout<<i+1<<". "<<friends.at(i)->getName()<<std::endl;
-            }
-            int c = validateChoice(1,friends.size(),"Enter your friend number: ");
-            std::cout<<std::endl;
-            Student* currentFriend = friends.at(c-1);
-            Friend currentFri(currentFriend);
-            std::cout<<"ID       : "<<currentFriend->getID()<<std::endl
-                     <<"Name     : "<<currentFriend->getName()<<std::endl
-                     <<"Username : "<<currentFriend->getUsername()<<std::endl
-                     <<"Courses  : [ "<<currentFriend->getCourses().size()<<" ] Course(s)\n"
-                     <<"Friends  : [ "<<currentFri.getFriends().size()<<" ] Friend(s)\n";
+            stu.viewFriends();
         } else if (choice == 8) {
             // Get Notifications
             std::vector<Student*> notifications = noti.getNotificatoins();

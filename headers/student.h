@@ -21,6 +21,7 @@ public:
     void setID(std::string id);
     void viewProfile();
     void viewCourses();
+    void viewFriends();
 
     std::vector<Course*> getCourses();
     std::vector<Course*> getUnregisteredCourses();
