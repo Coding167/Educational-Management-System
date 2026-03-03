@@ -1,29 +1,80 @@
-# Educational Management System
+# 🎓 Educational Management System (C++ & OOP & SQL)
 
 ## 📌 Overview
-The **Educational Management System - OOP** is a console-based application written in C++ using `OOP` for data organization.  
-It allows two types of users — **Doctor** and **Student** — to manage courses and assignments in a simple, text-based interface.
+
+The **Educational Management System** is a console-based application built with **C++** using **Object-Oriented Programming (OOP)** principles and connected to a relational database.
+
+The system simulates a real educational platform where **Students** and **Doctors** can manage courses, assignments, friendships, and notifications through a structured and organized interface.
 
 ---
 
-## 👤 User Roles
+## 🏗️ Technologies Used
 
-### **1. Student**
-- Information: `ID`, `Name`, `Username`, `Password`, `Email`, `Courses`
-- Features:
-  - See his Profile
-  - Register in courses
-  - View enrolled courses
-  - Submit assignments
-  - View assignments
-  - Add Friend
-  - View all Friends
-  - See the Notifications
+* C++
+* OOP (Classes, Encapsulation, Abstraction)
+* SQL Database
+* ODBC Connection
 
-### **2. Doctor**
-- Information: `ID`, `Name`, `Username`, `Password`, `Email`, `Courses`
-- Features:
-  - See his Profile
-  - Create courses
-  - Add assignments
-  - View their courses
+---
+
+## 👥 User Roles
+
+---
+
+## 👨‍🎓 Student
+
+### 📄 Information
+
+* ID
+* Name
+* Username
+* Email
+* Password
+* Enrolled Courses
+
+### ⚙️ Features
+
+* View Profile
+* Enroll in Courses
+* View My Courses
+* Solve Assignments (MCQ with answer validation)
+* View Assignment Report (Solved / Not Solved)
+* Add Friend (Send Friend Request)
+* View Friends
+* Receive & Manage Notifications
+* Accept / Reject Friend Requests
+
+---
+
+## 👨‍🏫 Doctor
+
+### 📄 Information
+
+* ID
+* Name
+* Username
+* Email
+* Password
+* Created Courses
+
+### ⚙️ Features
+
+* View Profile
+* Create Courses
+* Add Assignments to Courses
+* View Their Courses
+
+---
+
+## 🗄️ Database Structure
+
+### Main Tables:
+
+* `Student`
+* `Doctor`
+* `Course`
+* `Assignment`
+* `Student_Course`
+* `Student_Assignment`
+* `Friend`
+* `Notification`
