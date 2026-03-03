@@ -581,6 +581,98 @@ void Student::solveAssignment() {
     }
 }
 
+void Student::addFriend() {
+    Database db;
+    if (!db.connect(connectionString)) return;
+
+    std::string username;
+    std::cout << "Enter the username of the friend: ";
+    std::cin >> username;
+
+    // Get friend info + counts
+    SQLHSTMT stmt = db.executeQueryHandle(
+        "SELECT s.id, s.name, s.username, "
+        "(SELECT COUNT(*) FROM Student_Course sc WHERE sc.student_id = s.id), "
+        "(SELECT COUNT(*) FROM Friend f WHERE f.student_id = s.id OR f.friend_id = s.id) "
+        "FROM Student s "
+        "WHERE s.username = '" + username + "';"
+    );
+
+    if (!stmt) {
+        std::cout << "Query failed!\n";
+        return;
+    }
+
+    int friendId;
+    char name[100];
+    char user[100];
+    int courseCount;
+    int friendCount;
+
+    if (SQLFetch(stmt) != SQL_SUCCESS) {
+        std::cout << "User not found.\n";
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+        return;
+    }
+
+    SQLGetData(stmt, 1, SQL_C_SLONG, &friendId, 0, NULL);
+    SQLGetData(stmt, 2, SQL_C_CHAR, name, sizeof(name), NULL);
+    SQLGetData(stmt, 3, SQL_C_CHAR, user, sizeof(user), NULL);
+    SQLGetData(stmt, 4, SQL_C_SLONG, &courseCount, 0, NULL);
+    SQLGetData(stmt, 5, SQL_C_SLONG, &friendCount, 0, NULL);
+
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+
+    // Can't add yourself
+    if (friendId == this->id) {
+        std::cout << "You cannot add yourself.\n";
+        return;
+    }
+
+    // Check if already friends
+    SQLHSTMT checkStmt = db.executeQueryHandle(
+        "SELECT * FROM Friend "
+        "WHERE (student_id = " + std::to_string(this->id) +
+        " AND friend_id = " + std::to_string(friendId) + ") "
+        "OR (student_id = " + std::to_string(friendId) +
+        " AND friend_id = " + std::to_string(this->id) + ");"
+    );
+
+    if (checkStmt && SQLFetch(checkStmt) == SQL_SUCCESS) {
+        std::cout << "You are already friends.\n";
+        SQLFreeHandle(SQL_HANDLE_STMT, checkStmt);
+        return;
+    }
+
+    SQLFreeHandle(SQL_HANDLE_STMT, checkStmt);
+
+    // Show friend details
+    std::cout << "\n--- Friend Details ---\n";
+    std::cout << "ID: " << friendId << "\n";
+    std::cout << "Name: " << name << "\n";
+    std::cout << "Username: " << user << "\n";
+    std::cout << "Courses: " << courseCount << "\n";
+    std::cout << "Friends: " << friendCount << "\n";
+
+    int confirm;
+    std::cout << "\nDo you want to be her friend? [yes=1 / no=0]: ";
+    std::cin >> confirm;
+
+    if (confirm != 1) {
+        std::cout << "Cancelled.\n";
+        return;
+    }
+
+    // Send notification instead of directly adding friend
+    db.executeNonQuery(
+        "INSERT INTO Notification ([from], [to]) VALUES (" +
+        std::to_string(this->id) + ", " +
+        std::to_string(friendId) + ");"
+    );
+
+    std::cout << "Friend request sent successfully!\n";
+}
+
 void studentStart(std::string personID) {
     // the student
     Student stu(personID);
@@ -617,30 +709,7 @@ void studentStart(std::string personID) {
             stu.viewAssignmentReport();
         } else if (choice == 6) {
             // Add Friend
-            std::vector<Student*> notFriends = fri.getNotFriends();
-            if (notFriends.empty()) {
-                std::cout << "No users available to add as friends. You're connected with everyone!\n";
-                continue;
-            }
-            std::cout << "\nAvailable Users to Add as Friend:\n";
-            for (int i = 0 ; i < notFriends.size() ; i++) {
-                std::cout<<i+1<<". "<<notFriends.at(i)->getName()<<std::endl;
-            }
-            int c = validateChoice(1,notFriends.size(),"Enter the number of the user to view details: ");
-            std::cout<<std::endl;
-            Student* currentFriend = notFriends.at(c-1);
-            Friend currentFri(currentFriend);
-            std::cout<<"ID       : "<<currentFriend->getID()<<std::endl
-                     <<"Name     : "<<currentFriend->getName()<<std::endl
-                     <<"Username : "<<currentFriend->getUsername()<<std::endl
-                     <<"Courses  : [ "<<currentFriend->getCourses().size()<<" ] Course(s)\n"
-                     <<"Friends  : [ "<<currentFri.getFriends().size()<<" ] Friend(s)\n\n";
-            c = validateChoice(0,1,"Do you want to send a friend request? [1 = Yes | 0 = No]: ");
-            std::cout<<std::endl;
-            if (c) {
-                noti.send(currentFriend);
-                    std::cout << "Friend request sent to " << currentFriend->getName() << "\n";
-            }
+            stu.addFriend();
         } else if (choice == 7) {
             // List my Friends
             stu.viewFriends();
