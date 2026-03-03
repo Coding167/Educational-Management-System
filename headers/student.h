@@ -25,6 +25,7 @@ public:
     void viewAssignmentReport();
     void solveAssignment();
     void addFriend();
+    void viewNotifications();
 
     std::vector<Course*> getCourses();
     std::vector<Course*> getUnregisteredCourses();
