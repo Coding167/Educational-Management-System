@@ -22,6 +22,7 @@ public:
     void viewProfile();
     void viewCourses();
     void viewFriends();
+    void viewAssignmentReport();
 
     std::vector<Course*> getCourses();
     std::vector<Course*> getUnregisteredCourses();

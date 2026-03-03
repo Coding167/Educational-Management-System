@@ -355,6 +355,100 @@ void Student::enrollInCourse() {
     SQLFreeHandle(SQL_HANDLE_STMT, stmt2);
 }
 
+void Student::viewAssignmentReport() {
+
+    Database db;
+    if (!db.connect(connectionString)) return;
+
+    SQLHSTMT stmt = db.executeQueryHandle(
+        "SELECT c.id, c.name "
+        "FROM Course c "
+        "JOIN Student_Course sc ON sc.course_id = c.id "
+        "WHERE sc.student_id = " + std::to_string(this->id) + ";"
+    );
+
+    if (stmt == NULL) {
+        std::cout << "Failed to retrieve courses.\n";
+        return;
+    }
+
+    std::vector<int> courseIDs;
+    std::vector<std::string> courseNames;
+
+    while (SQLFetch(stmt) == SQL_SUCCESS) {
+        int id;
+        char name[100];
+
+        SQLGetData(stmt, 1, SQL_C_SLONG, &id, 0, NULL);
+        SQLGetData(stmt, 2, SQL_C_CHAR, name, sizeof(name), NULL);
+
+        courseIDs.push_back(id);
+        courseNames.push_back(name);
+    }
+
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+
+    if (courseIDs.empty()) {
+        std::cout << "You are not enrolled in any courses.\n";
+        return;
+    }
+
+    std::cout << "\nYour Courses:\n";
+    for (int i = 0; i < courseIDs.size(); i++) {
+        std::cout << i + 1 << ". " << courseNames[i] << "\n";
+    }
+
+    int choice = validateChoice(1, courseIDs.size(), "Choose course: ");
+    int selectedCourse = courseIDs[choice - 1];
+
+    SQLHSTMT stmt2 = db.executeQueryHandle(
+        "SELECT a.id, sa.status "
+        "FROM Assignment a "
+        "LEFT JOIN Student_Assignment sa "
+        "ON sa.assignment_id = a.id "
+        "AND sa.student_id = " + std::to_string(this->id) + " "
+        "WHERE a.course_id = " + std::to_string(selectedCourse) + ";"
+    );
+
+    if (stmt2 == NULL) {
+        std::cout << "Failed to retrieve assignments.\n";
+        return;
+    }
+
+    std::cout << "\n--- Assignment Report ---\n";
+
+    bool hasAssignments = false;
+
+    while (SQLFetch(stmt2) == SQL_SUCCESS) {
+        hasAssignments = true;
+
+        int assignmentId;
+        char status[50];
+
+        SQLGetData(stmt2, 1, SQL_C_SLONG, &assignmentId, 0, NULL);
+
+        // status may be NULL
+        SQLLEN indicator;
+        SQLGetData(stmt2, 2, SQL_C_CHAR, status, sizeof(status), &indicator);
+
+        std::cout << "Assignment ID: " << assignmentId << " | Status: ";
+
+        if (indicator == SQL_NULL_DATA) {
+            std::cout << "Not Attempted";
+        } else {
+            std::cout << status;
+        }
+
+        std::cout << "\n";
+    }
+
+    if (!hasAssignments) {
+        std::cout << "No assignments in this course.\n";
+    }
+
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt2);
+}
+
 void studentStart(std::string personID) {
     // the student
     Student stu(personID);
@@ -436,27 +530,7 @@ void studentStart(std::string personID) {
             }
         } else if (choice == 5) {
             // Assignment Report
-            std::vector<Course*> courses = stu.getCourses();
-            if (courses.empty()) {
-                std::cout << "\nYou are not enrolled in any courses yet.\n";
-                std::cout << "Go to 'Enroll in Course' to join one!\n";
-                continue;
-            }
-            for (int i = 0 ; i < courses.size() ; i++) {
-                std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<" - Code "<<courses.at(i)->getID()<<std::endl;
-            }
-            int c = validateChoice(1,courses.size(),"Please enter the number of the course you would like to view: ");
-            std::vector<Assignment*> currentAssignment = courses.at(c-1)->getAssignments();
-            if (currentAssignment.empty()) {
-                std::cout << "This course has no assignments yet.\n";
-                continue;
-            }
-            std::cout<<std::endl;
-            int count = 0;
-            for (Assignment* a: currentAssignment) {
-                count += a->isSolved(personID);
-            }
-            std::cout<<"You have solved "<<count<<" Out of "<<currentAssignment.size()<<" Assignment(s)"<<std::endl;
+            stu.viewAssignmentReport();
         } else if (choice == 6) {
             // Add Friend
             std::vector<Student*> notFriends = fri.getNotFriends();
