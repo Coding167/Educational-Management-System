@@ -252,6 +252,109 @@ void Student::viewFriends() {
     SQLFreeHandle(SQL_HANDLE_STMT, stmt2);
 }
 
+void Student::enrollInCourse() {
+
+    Database db;
+    if (!db.connect(connectionString)) return;
+
+    SQLHSTMT stmt = db.executeQueryHandle(
+        "SELECT id, name "
+        "FROM Course "
+        "WHERE id NOT IN ( "
+        "   SELECT course_id "
+        "   FROM Student_Course "
+        "   WHERE student_id = " + std::to_string(this->id) +
+        ");"
+    );
+
+    if (stmt == NULL) {
+        std::cout << "Failed to retrieve courses.\n";
+        return;
+    }
+
+    std::vector<int> courseIDs;
+    std::vector<std::string> courseNames;
+
+    while (SQLFetch(stmt) == SQL_SUCCESS) {
+        int id;
+        char name[100];
+
+        SQLGetData(stmt, 1, SQL_C_SLONG, &id, 0, NULL);
+        SQLGetData(stmt, 2, SQL_C_CHAR, name, sizeof(name), NULL);
+
+        courseIDs.push_back(id);
+        courseNames.push_back(name);
+    }
+
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+
+    if (courseIDs.empty()) {
+        std::cout << "No courses available.\n";
+        return;
+    }
+
+    std::cout << "\nAvailable Courses:\n";
+    for (int i = 0; i < courseIDs.size(); i++) {
+        std::cout << i + 1 << ". " << courseNames[i] << "\n";
+    }
+
+    int choice = validateChoice(1, courseIDs.size(), "Choose course: ");
+    int selectedCourse = courseIDs[choice - 1];
+
+    SQLHSTMT stmt2 = db.executeQueryHandle(
+        "SELECT c.id, c.name, d.name, "
+        "(SELECT COUNT(*) FROM Assignment WHERE course_id = c.id), "
+        "(SELECT COUNT(*) FROM Student_Course WHERE course_id = c.id) "
+        "FROM Course c "
+        "JOIN Doctor d ON d.id = c.doctor_id "
+        "WHERE c.id = " + std::to_string(selectedCourse) + ";"
+    );
+
+    if (stmt2 != NULL && SQLFetch(stmt2) == SQL_SUCCESS) {
+
+        int id;
+        char courseName[100];
+        char doctorName[100];
+        int assignments;
+        int students;
+
+        SQLGetData(stmt2, 1, SQL_C_SLONG, &id, 0, NULL);
+        SQLGetData(stmt2, 2, SQL_C_CHAR, courseName, sizeof(courseName), NULL);
+        SQLGetData(stmt2, 3, SQL_C_CHAR, doctorName, sizeof(doctorName), NULL);
+        SQLGetData(stmt2, 4, SQL_C_SLONG, &assignments, 0, NULL);
+        SQLGetData(stmt2, 5, SQL_C_SLONG, &students, 0, NULL);
+
+        std::cout << "\n--- Course Details ---\n";
+        std::cout << "ID          : " << id << "\n";
+        std::cout << "Name        : " << courseName << "\n";
+        std::cout << "Doctor      : " << doctorName << "\n";
+        std::cout << "Assignments : " << assignments << "\n";
+        std::cout << "Students    : " << students << "\n";
+
+        int confirm = validateChoice(0, 1, 
+            "Do you want to enroll in this course? [yes=1 / no=0]: ");
+
+        if (confirm == 1) {
+
+            std::string insertQuery =
+                "INSERT INTO Student_Course (student_id, course_id) VALUES ("
+                + std::to_string(this->id) + ", "
+                + std::to_string(id) + ");";
+
+            if (db.executeNonQuery(insertQuery)) {
+                std::cout << "Enrolled successfully.\n";
+            } else {
+                std::cout << "Failed to enroll.\n";
+            }
+        }
+        else {
+            std::cout << "Enrollment cancelled.\n";
+        }
+    }
+
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt2);
+}
+
 void studentStart(std::string personID) {
     // the student
     Student stu(personID);
@@ -276,30 +379,7 @@ void studentStart(std::string personID) {
             stu.viewProfile();
         }else if (choice == 2) {
             // Register in Course
-            std::vector<Course*> courses = stu.getUnregisteredCourses();
-            if (courses.empty()) {
-                std::cout << "\nYou are already registered in all available courses!\n";
-                continue;
-            }
-            std::cout << "\nAvailable Courses:\n";
-            for (int i = 0 ; i < courses.size() ; i++) {
-                std::cout<<i+1<<". Course "<<courses.at(i)->getName()<<std::endl;
-            }
-            int c = validateChoice(1,courses.size(),"\nEnter the number of the course to view details: ");
-            std::cout<<std::endl;
-            Course* currentCourse = courses.at(c-1);
-            std::cout<<"Course Code       : "<<currentCourse->getID()<<std::endl
-                    <<"Course Name       : "<<currentCourse->getName()<<std::endl
-                    <<"Created by        : Dr. "<<currentCourse->getDoctor()<<std::endl
-                    <<"Assignments       : [ "<<currentCourse->getAssignments().size()<<" ] Assignment(s)\n"
-                    <<"Enrolled Students : [ "<<currentCourse->getStudetns().size()<<" ] Student(s)\n\n";
-            int yOrN = validateChoice(0,1,"Do you want to register in this course? [1 = Yes, 0 = No]: ");
-            std::cout<<std::endl;
-            if (yOrN) {
-                currentCourse->addStudent(personID);
-                stu.addRegisterCourse(currentCourse->getID());
-                std::cout << "Successfully registered in \"" << currentCourse->getName() << "\"!\n";
-            }
+            stu.enrollInCourse();
         } else if (choice == 3) {
             // List my courses
             stu.viewCourses();

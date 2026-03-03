@@ -26,6 +26,7 @@ public:
     std::vector<Course*> getCourses();
     std::vector<Course*> getUnregisteredCourses();
     void addRegisterCourse(std::string courseID);
+    void enrollInCourse();
 };
 
 void studentStart(std::string personID);
